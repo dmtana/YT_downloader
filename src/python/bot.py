@@ -1,6 +1,5 @@
 import os
 import yt_dlp
-import time
 import random
 import asyncio
 import json
@@ -22,6 +21,11 @@ bot = AsyncTeleBot(get_token())
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cэми']
 
+# commands for download video
+commands_video = [' -video', ' -v', ' видео', ' -в']
+# Отправляем сообщение в канал
+# bot.send_message(chat_id='@your_channel_name', text='Hello, world!')
+commands_group = [' @music_1', ' @music_']
 
 async def save_json(a, j):
     '''
@@ -44,18 +48,29 @@ async def start(message):
 
 @bot.message_handler(content_types=["text"])
 async def echo(message):
-    if "https://" in message.text:
-        await bot.send_message(message.chat.id, "Downloading")
-        await download_audio(message)
-        await bot.send_message(message.chat.id, "Download complete")
-        await send_audio(message)
-    elif message.text.lower() in cat:
-        await show_cat(message)
-        print("мяу", end=" ")
-    else:
-        await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
+    try:
+        if "https://" in message.text:
+            if any(item in message.text for item in commands_video):
+                await bot.send_message(message.chat.id, "Functional in process...")
+                await download_video()
+            elif any(item in message.text for item in commands_group):
+                await bot.send_message(message.chat.id, "Functional in process...")
+            else:
+                await bot.send_message(message.chat.id, "Downloading")
+                await download_audio(message)
+                await bot.send_message(message.chat.id, "Download complete")
+                await send_audio(message)
+        elif message.text.lower() in cat:
+            await show_cat(message)
+            print("мяу", end=" ")
+        else:
+            await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
+            print(message.chat.type)
+        print("OK")
+    except Exception as e:
+        print("148", e)
 
-async def send_audio(message):
+async def send_audio(message, group=None):
     file_name = ""
     file_id = ""
     with yt_dlp.YoutubeDL() as ydl:
@@ -69,9 +84,8 @@ async def send_audio(message):
             await bot.send_audio(message.chat.id, audio)
         print("done sending")
     except Exception as e:
-        time.sleep(2)
-        print("ERROR SENDING: ", e)
         await bot.send_message(message.chat.id, "ERROR SENDING")
+        print("ERROR SENDING: ", e)
 
 async def download_audio(message):
     file_name = ""
@@ -92,7 +106,7 @@ async def download_audio(message):
             except:
                 print(777, "ERR DOWNLOAD IMAGE")
     except Exception as e:
-        print("1", e)
+        print("65", e)
 
     URL = message.text
     '''
@@ -109,6 +123,9 @@ async def download_audio(message):
 
     await mp3_tag_editor.tag_edit(file_id, message.chat.id)
 
+async def download_video(message=None):
+    print("NO IMPLEMENTATION YET")
+
 async def show_cat(message):
     try:
         with open(f'photo/Cats/cat{random.randint(1, 3)}.jpeg', 'rb') as photo:
@@ -117,5 +134,6 @@ async def show_cat(message):
         await bot.send_message(message.chat.id, "нима котика")
 
 # BOT in multithread
-# run non stop
+# run non-stop
+print("BOT STARTED")
 asyncio.run(bot.polling(non_stop=True))
