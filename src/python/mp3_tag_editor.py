@@ -2,7 +2,7 @@ from mutagen.id3 import ID3, TIT2, TALB, TPE1, TCON, TDRC, APIC
 import json
 
 
-async def tag_edit(id='Qk1ymCm0tLI', media_folder='390352383'):
+async def tag_edit(id, media_folder):
     '''
     :param id: like 'Qk1ymCm0tLI'
     :param media_folder: like '390352383'

@@ -1,10 +1,5 @@
-import os
-import yt_dlp
-import random
 import asyncio
-import json
-import mp3_tag_editor
-import urllib.request
+import setting
 from telebot.async_telebot import AsyncTeleBot
 
 def get_token():
@@ -18,29 +13,6 @@ hello_str = "Я бот для скачивания музыки с YouTube, пр
 
 bot = AsyncTeleBot(get_token())
 
-# easter egg
-cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cэми']
-
-# commands for download video
-commands_video = [' -video', ' -v', ' видео', ' -в']
-# Отправляем сообщение в канал
-# bot.send_message(chat_id='@your_channel_name', text='Hello, world!')
-commands_group = [' @music_1', ' @music_']
-
-async def save_json(a, j):
-    '''
-    this method save json info
-    :param a: name of ID :
-    :param j: json str
-    :return: None
-    '''
-    try:
-        with open(f"JSON_INFO_MP3/{a}.txt", "w") as json_file:
-            # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
-            json_file.write(json.dumps(j))
-    except Exception as e:
-        print("ERROR JSON SAVE: ", e)
-
 @bot.message_handler(commands=["start"])
 async def start(message):
     str = f"Привет, {message.from_user.first_name}. \n"
@@ -48,90 +20,26 @@ async def start(message):
 
 @bot.message_handler(content_types=["text"])
 async def echo(message):
+    message_info = None
     try:
         if "https://" in message.text:
-            if any(item in message.text for item in commands_video):
-                await bot.send_message(message.chat.id, "Functional in process...")
-                await download_video()
-            elif any(item in message.text for item in commands_group):
-                await bot.send_message(message.chat.id, "Functional in process...")
-            else:
-                await bot.send_message(message.chat.id, "Downloading")
-                await download_audio(message)
-                await bot.send_message(message.chat.id, "Download complete")
-                await send_audio(message)
-        elif message.text.lower() in cat:
-            await show_cat(message)
+            message_info = await bot.send_message(message.chat.id, "Downloading")
+            await setting.download_audio(message)
+            await bot.delete_message(message.chat.id, message_info.message_id)
+            message_info = await bot.send_message(message.chat.id, "Download complete")
+            await setting.send_audio(message, bot)
+            await bot.delete_message(message.chat.id, message_info.message_id)
+        elif message.text.lower() in setting.cat:
+            await setting.show_cat(message, bot)
             print("мяу", end=" ")
         else:
             await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
             print(message.chat.type)
-        print("OK")
+        print("ERROR INPUT")
     except Exception as e:
-        print("148", e)
-
-async def send_audio(message, group=None):
-    file_name = ""
-    file_id = ""
-    with yt_dlp.YoutubeDL() as ydl:
-        # EXTRACT FROM LINK JSON INFO
-        s = ydl.sanitize_info(ydl.extract_info(message.text, download=False))
-        # WE GET TITLE AND ID FROM LINK
-        file_name += s['title']
-        file_id += s['id']
-    try:
-        with open(f'media_from_yt/{message.chat.id}/{file_name} [{file_id}].mp3', 'rb') as audio:
-            await bot.send_audio(message.chat.id, audio)
-        print("done sending")
-    except Exception as e:
-        await bot.send_message(message.chat.id, "ERROR SENDING")
-        print("ERROR SENDING: ", e)
-
-async def download_audio(message):
-    file_name = ""
-    file_id = ""
-    try:
-        with yt_dlp.YoutubeDL() as ydl:
-            some_var = ydl.sanitize_info(ydl.extract_info(message.text, download=False))
-            # WE GET TITLE AND ID FROM LINK
-            file_name += some_var['title']
-            file_id += some_var['id']
-            await save_json(file_id, some_var)
-            l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
-            try:
-                # DOWNLOAD AND SAVE IMAGE
-                resource = urllib.request.urlopen(l)
-                with open(f'photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
-                    file.write(resource.read())
-            except:
-                print(777, "ERR DOWNLOAD IMAGE")
-    except Exception as e:
-        print("65", e)
-
-    URL = message.text
-    '''
-    :param URL: link in format 'https://...'
-    :return: None
-    '''
-    try:
-        os.system(f'yt-dlp -f ba -x --audio-format mp3 -P '  # using ffmpeg.exe
-                  f'D:\Other\Projects\Python_TG_bot\src\python\media_from_yt\{message.chat.id} '  # path
-                  f'{URL}"')  # link
-        print("download complete")
-    except Exception as e:
-        print("ERR DOWNLOAD")
-
-    await mp3_tag_editor.tag_edit(file_id, message.chat.id)
-
-async def download_video(message=None):
-    print("NO IMPLEMENTATION YET")
-
-async def show_cat(message):
-    try:
-        with open(f'photo/Cats/cat{random.randint(1, 3)}.jpeg', 'rb') as photo:
-            await bot.send_photo(message.chat.id, photo)
-    except Exception as e:
-        await bot.send_message(message.chat.id, "нима котика")
+        await bot.delete_message(message.chat.id, message_info.message_id)
+        await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
+        print("1488", e)
 
 # BOT in multithread
 # run non-stop
