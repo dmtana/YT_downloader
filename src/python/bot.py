@@ -1,5 +1,5 @@
 import asyncio
-import setting
+import helper
 from telebot.async_telebot import AsyncTeleBot
 
 def get_token():
@@ -21,21 +21,29 @@ async def start(message):
 @bot.message_handler(content_types=["text"])
 async def echo(message):
     message_info = None
+    args = helper.get_args(message.text)
+    print(message.text)
     try:
-        if "https://" in message.text:
+        if "https://" in args['link']:
             message_info = await bot.send_message(message.chat.id, "Downloading")
-            await setting.download_audio(message)
+            if args['video'] is False:
+                await helper.download_audio(args['link'], message.chat.id)
+                await bot.delete_message(message.chat.id, message_info.message_id)
+                message_info = await bot.send_message(message.chat.id, "Download complete")
+                await helper.send_audio(message, bot)
+            elif args['video'] is True:
+                await helper.download_video(args['link'])
+                await bot.delete_message(message.chat.id, message_info.message_id)
+                message_info = await bot.send_message(message.chat.id, "Download complete")
+                await helper.send_video(message, bot)
             await bot.delete_message(message.chat.id, message_info.message_id)
-            message_info = await bot.send_message(message.chat.id, "Download complete")
-            await setting.send_audio(message, bot)
-            await bot.delete_message(message.chat.id, message_info.message_id)
-        elif message.text.lower() in setting.cat:
-            await setting.show_cat(message, bot)
+        elif message.text.lower() in helper.cat:
+            await helper.show_cat(message, bot)
             print("мяу", end=" ")
         else:
             await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
             print(message.chat.type)
-        print("ERROR INPUT")
+            print("ERROR INPUT")
     except Exception as e:
         await bot.delete_message(message.chat.id, message_info.message_id)
         await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")

@@ -32,7 +32,6 @@ async def tag_edit(id, media_folder):
                 with open(f"photo/Thumbnails/{id}.jpeg", "rb") as album_art:
                     audiofile.add(APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=album_art.read()))
             except Exception as e:
-
                 print("881", e)
             try:
                 audiofile.add(TIT2(encoding=3, text=title))
