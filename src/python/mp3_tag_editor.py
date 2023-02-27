@@ -1,6 +1,11 @@
 from mutagen.id3 import ID3, TIT2, TALB, TPE1, TCON, TDRC, APIC
+import os
 import json
 
+def str_buf_fix(s):
+    trans_table = str.maketrans('', '', '"<>:/\\|?*')
+    s = s.translate(trans_table)
+    return s
 
 async def tag_edit(id, media_folder):
     '''
@@ -8,14 +13,17 @@ async def tag_edit(id, media_folder):
     :param media_folder: like '390352383'
     :return: None
     '''
+    folder_name = 'JSON_INFO_MP3'
     try:
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
         # read tag from json info
-        with open(f"JSON_INFO_MP3/{id}.txt", "r") as file:
+        with open(f"{folder_name}/{id}.txt", "r") as file:
             ###   GET INFO FROM JSON   ###
             json_info = json.loads(file.read())
             title = json_info['title']
             # EDIT TAG
-            audiofile = ID3(f"media_from_yt/{media_folder}/{title} [{id}].mp3")
+            audiofile = ID3(f"media_from_yt/{media_folder}/{str_buf_fix(title)}.mp3")
 
             try:
                 artist = json_info['artist']
@@ -33,10 +41,10 @@ async def tag_edit(id, media_folder):
                     audiofile.add(APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=album_art.read()))
             except Exception as e:
                 print("881", e)
-            try:
-                audiofile.add(TIT2(encoding=3, text=title))
-            except Exception as e:
-                print("882", e)
+                try:
+                    audiofile.add(TIT2(encoding=3, text=str_buf_fix(title)))
+                except Exception as e:
+                    print("882", e)
             # SAVE TAG
             audiofile.save()
 

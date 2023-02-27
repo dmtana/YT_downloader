@@ -4,6 +4,7 @@ import os
 import urllib.request
 import json
 import random
+import datetime
 
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cэми']
@@ -19,12 +20,14 @@ async def save_json(a, j): #this method save json info
 # commands for download video
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео']
 
-# bot.send_message(chat_id='@your_channel_name', text='Hello, world!')
-
-# dict pasrsing
-commands = {"link": '', "video": False, "group": ''}
+def str_buf_fix(s):
+    trans_table = str.maketrans('', '', '"<>:/\\|?*')
+    s = s.translate(trans_table)
+    return s
 
 def get_args(m):
+    # dict pasrsing
+    commands = {"link": '', "video": False, "group": ''}
     # trim and delete spaces between words
     list_str = " ".join(m.split()).split(" ")
     commands['link'] = list_str[0]
@@ -50,9 +53,9 @@ async def send_video(message, bot):
         file_name += s['title']
         file_id += s['id']
     try:
-        with open(f'video/{file_name} [{file_id}].mp4', 'rb') as video:
+        with open(f'video/{str_buf_fix(file_name)}.mp4', 'rb') as video:
             await bot.send_document(message.chat.id, video)
-        print("done sending")
+        print("done sending", datetime.datetime.now().time().strftime("%c"))
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
         print("ERROR SENDING: ", e)
@@ -67,14 +70,18 @@ async def send_audio(message, bot):
         file_name += s['title']
         file_id += s['id']
     try:
-        with open(f'media_from_yt/{message.chat.id}/{file_name} [{file_id}].mp3', 'rb') as audio:
+        with open(f'media_from_yt/{message.chat.id}/{str_buf_fix(file_name)}.mp3', 'rb') as audio:
             await bot.send_audio(message.chat.id, audio)
-        print("done sending")
+        print("done sending", datetime.datetime.now().time().strftime("%c"))
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
         print("ERROR SENDING: ", e)
 
 async def download_audio(URL, chat_id):
+    # Folder for album covers, if does not exist
+    folder = 'photo/Thumbnails'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     # chat_id - folder
     file_name = ""
     file_id = ""
@@ -96,7 +103,7 @@ async def download_audio(URL, chat_id):
     except Exception as e:
         print("65", e)
     try:
-        os.system(f'yt-dlp -f ba -x --audio-quality 0 -x --audio-format mp3 -P '  # using ffmpeg.exe
+        os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 -P ' # using ffmpeg.exe # 
                   f'/media_from_yt/{chat_id} '  # path
                   f'{URL}"')  # link
         print("download complete")
@@ -119,7 +126,7 @@ async def download_video(URL):
     except Exception as e:
         print("165", e)
     try:
-        os.system(f'yt-dlp -f mp4 -P /video {URL}')
+        os.system(f'yt-dlp -f mp4 -P /video -o "{str_buf_fix(file_name)}.mp4" {URL}')
         print("download complete")
     except Exception as e:
         print("ERR DOWNLOAD")
