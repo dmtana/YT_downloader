@@ -47,7 +47,7 @@ async def echo(message):
     except Exception as e:
         await bot.delete_message(message.chat.id, message_info.message_id)
         await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
-        print("1488", e)
+        print("ERROR IN MAIN PACKAGE", e)
 
 # BOT in multithread
 # run non-stop
