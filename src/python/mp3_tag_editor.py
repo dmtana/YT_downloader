@@ -7,9 +7,10 @@ def str_buf_fix(s):
     s = s.translate(trans_table)
     return s
 
-async def tag_edit(id, media_folder):
+async def tag_edit(id):
     '''
     :param id: like 'Qk1ymCm0tLI'
+    @deprecated
     :param media_folder: like '390352383'
     :return: None
     '''
@@ -23,7 +24,7 @@ async def tag_edit(id, media_folder):
             json_info = json.loads(file.read())
             title = json_info['title']
             # EDIT TAG
-            audiofile = ID3(f"media_from_yt/{media_folder}/{str_buf_fix(title)}.mp3")
+            audiofile = ID3(f"media_from_yt/{str_buf_fix(title)}.mp3")
 
             try:
                 artist = json_info['artist']

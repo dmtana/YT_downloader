@@ -27,10 +27,10 @@ async def echo(message):
         if "https://" in args['link']:
             message_info = await bot.send_message(message.chat.id, "Downloading")
             if args['video'] is False:
-                await helper.download_audio(args['link'], message.chat.id)
+                file_id = await helper.download_audio(args['link'])
                 await bot.delete_message(message.chat.id, message_info.message_id)
                 message_info = await bot.send_message(message.chat.id, "Download complete")
-                await helper.send_audio(message, bot)
+                await helper.send_audio(message=message, bot=bot, file_id=file_id, group=args['group'])
             elif args['video'] is True:
                 await helper.download_video(args['link'])
                 await bot.delete_message(message.chat.id, message_info.message_id)
