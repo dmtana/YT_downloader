@@ -154,12 +154,15 @@ async def download_video(URL):
 
 async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
     now = time.time()
-    for file_name in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path):
-            if os.stat(file_path).st_mtime < now - max_day * 86400:
-                os.remove(file_path)
-                print(f'[DELETE FILE]: {file_path}')
+    try:
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.isfile(file_path):
+                if os.stat(file_path).st_mtime < now - max_day * 86400:
+                    os.remove(file_path)
+                    print(f'[DELETE FILE]: {file_path}')
+    except Exception as e:
+        print('[NO DIR: JSON_INFO_MP3]')
 
 async def show_cat(message, bot):
     try:
