@@ -5,20 +5,24 @@ import urllib.request
 import json
 import random
 import datetime
+import time
+
 
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cэми']
+del_file = True
 
 async def save_json(a, j): #this method save json info
     try: # a: name of ID / j: json str
         with open(f"JSON_INFO_MP3/{a}.txt", "w") as json_file:
             # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
             json_file.write(json.dumps(j))
+            print('[+][JSON SAVE]')
     except Exception as e:
-        print("ERROR JSON SAVE: ", e)
+        print("[-][ERROR JSON SAVE]", e)
 
 # commands for download video
-commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео']
+commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('', '', '"<>:/\\|?*')
@@ -32,6 +36,8 @@ def get_args(m):
     list_str = " ".join(m.split()).split(" ")
     commands['link'] = list_str[0].replace('&feature=share', '')
     if len(list_str) > 1:
+        # for chekinig #
+        print('[Video command]', '[',list_str[1], ']')
         if list_str[1].lower() in commands_video:
             commands['video'] = True
         else:
@@ -39,44 +45,57 @@ def get_args(m):
             print("INVALID VIDEO COMMAND")
     if len(list_str) > 2:
         commands['group'] = list_str[2]
-
-    print(commands)
+    print('[+][ARG]')    
+    # print(commands)
     return commands
 
-async def send_video(message, bot):
+async def send_video(message, bot, file_id=''):
     file_name = ""
-    file_id = ""
-    with yt_dlp.YoutubeDL() as ydl:
-        # EXTRACT FROM LINK JSON INFO
-        s = ydl.sanitize_info(ydl.extract_info(message.text, download=False))
-        # WE GET TITLE AND ID FROM LINK
-        file_name += s['title']
-        file_id += s['id']
+
+    with open(f"JSON_INFO_MP3/{file_id}.txt", "r") as file:
+        json_info = json.loads(file.read())
+        file_name += json_info['title']
+    print('[+][START SENDING]')
+
     try:
         with open(f'video/{str_buf_fix(file_name)}.mp4', 'rb') as video:
             await bot.send_document(message.chat.id, video)
-        print("done sending", datetime.datetime.now())
+        print("[+][DONE SENDING]", datetime.datetime.now())
+        try:
+            if del_file:
+                os.remove(f'video/{str_buf_fix(file_name)}.mp4')
+                print('[+][VIDEO FILE DELETED]')
+        except Exception as e:
+            print('[ERR OF DEL]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
-        print("ERROR SENDING: ", e)
+        print("[-][ERROR SENDING]", e)
 
 async def send_audio(message, bot, file_id, group=''):
     file_name = ""
     with open(f"JSON_INFO_MP3/{file_id}.txt", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
+    print('[+][START SENDING]')
     try:
         with open(f'media_from_yt/{str_buf_fix(file_name)}.mp3', 'rb') as audio:
             await bot.send_audio(message.chat.id, audio)
             if group != '':
                 try:
+                    # Not working, err on telebot api
                     await bot.send_audio(chat_id=f'@{group}', audio=audio)
                 except Exception as e:
-                    print('Ошибка отправки в группу!', e)
-        print("done sending", datetime.datetime.now())
+                    print('[Ошибка отправки в группу!]', e)
+        print("[+][DONE SENDING]", f'[{datetime.datetime.now()}]', sep='\n')
+        try:
+            if del_file:
+                os.remove(f'media_from_yt/{str_buf_fix(file_name)}.mp3')
+                print('[+][FILE DELETED]')
+        except Exception as e:
+            print('[ERR OF DEL]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
-        print("ERROR SENDING: ", e)
+        print("[-][ERROR SENDING]", e)
 
 async def download_audio(URL):
     # Folder for album covers, if not exist
@@ -104,10 +123,10 @@ async def download_audio(URL):
     except Exception as e:
         print("65", e)
     try:
-        os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 -P ' # using ffmpeg.exe # 
-                  f'/media_from_yt/ '  # path
-                  f'{URL}"')  # link
-        print("download complete")
+        os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 ' # using ffmpeg.exe # 
+                  f'-P media_from_yt '  # path
+                  f'{URL}')  # link
+        print("[+][DOWNLOAD COMPLETE]")
     except Exception as e:
         print("ERR DOWNLOAD")
     await mp3_tag_editor.tag_edit(file_id)
@@ -127,11 +146,20 @@ async def download_video(URL):
     except Exception as e:
         print("165", e)
     try:
-        os.system(f'yt-dlp -f mp4 -P /video -o "{str_buf_fix(file_name)}.mp4" {URL}')
+        os.system(f'yt-dlp -f mp4 -P video -o "{str_buf_fix(file_name)}.mp4" {URL}')
         print("download complete")
     except Exception as e:
-        print("ERR DOWNLOAD")
+        print("ERR DOWNLOAD")    
     return file_id
+
+async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
+    now = time.time()
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.isfile(file_path):
+            if os.stat(file_path).st_mtime < now - max_day * 86400:
+                os.remove(file_path)
+                print(f'[DELETE FILE]: {file_path}')
 
 async def show_cat(message, bot):
     try:

@@ -25,6 +25,7 @@ async def echo(message):
     print(message.text)
     try:
         if "https://" in args['link']:
+            # variable [message_info] need for delete message after sending file
             message_info = await bot.send_message(message.chat.id, "Downloading")
             if args['video'] is False:
                 file_id = await helper.download_audio(args['link'])
@@ -32,10 +33,10 @@ async def echo(message):
                 message_info = await bot.send_message(message.chat.id, "Download complete")
                 await helper.send_audio(message=message, bot=bot, file_id=file_id, group=args['group'])
             elif args['video'] is True:
-                await helper.download_video(args['link'])
+                file_id = await helper.download_video(args['link'])
                 await bot.delete_message(message.chat.id, message_info.message_id)
                 message_info = await bot.send_message(message.chat.id, "Download complete")
-                await helper.send_video(message, bot)
+                await helper.send_video(message=message, bot=bot, file_id=file_id)
             await bot.delete_message(message.chat.id, message_info.message_id)
         elif message.text.lower() in helper.cat:
             await helper.show_cat(message, bot)
@@ -43,13 +44,15 @@ async def echo(message):
         else:
             await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
             print(message.chat.type)
-            print("ERROR INPUT")
+            print("[-][ERROR INPUT]")
     except Exception as e:
         await bot.delete_message(message.chat.id, message_info.message_id)
         await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
-        print("ERROR IN MAIN PACKAGE", e)
+        print("[-][ERROR IN MAIN PACKAGE]", e)
 
-# BOT in multithread
-# run non-stop
+# clear cache
+asyncio.run(helper.delete_file())
+
 print("BOT STARTED")
+# run non-stop
 asyncio.run(bot.polling(non_stop=True))
