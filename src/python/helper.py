@@ -13,6 +13,9 @@ cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'ры
 del_file = True
 
 async def save_json(a, j): #this method save json info
+    folder = 'JSON_INFO_MP3'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     try: # a: name of ID / j: json str
         with open(f"JSON_INFO_MP3/{a}.txt", "w") as json_file:
             # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
