@@ -166,7 +166,7 @@ async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
 
 async def show_cat(message, bot):
     try:
-        with open(f'photo/Cats/cat{random.randint(1, 3)}.jpeg', 'rb') as photo:
+        with open(f'photo/Cats/cat{random.randint(1, 7)}.jpeg', 'rb') as photo:
             await bot.send_photo(message.chat.id, photo)
     except Exception as e:
         await bot.send_message(message.chat.id, "нима котика")
