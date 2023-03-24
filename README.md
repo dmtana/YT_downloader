@@ -2,7 +2,6 @@
 Simple bot for download music
 
 This is simple telegram bot for download music from YouTube. Also you can download short video using after link command like -v or -video. 
-Main library is yt-dlp link in bellow.
 
 Based on <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> library.
 
