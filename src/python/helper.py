@@ -122,21 +122,21 @@ async def download_audio(URL):
                 with open(f'photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                     file.write(resource.read())
             except:
-                print(777, "ERR DOWNLOAD IMAGE")
+                print("[ERR DOWNLOAD IMAGE]")
     except Exception as e:
-        print("65", e)
+        print("1111111111111", e)
     try:
         os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 ' # using ffmpeg.exe # 
                   f'-P media_from_yt '  # path
                   f'{URL}')  # link
-        print("[+][DOWNLOAD COMPLETE]")
+        print("[+][DOWNLOAD AUDIO COMPLETE]")
     except Exception as e:
-        print("ERR DOWNLOAD")
+        print("[-][ERR DOWNLOAD]")
     await mp3_tag_editor.tag_edit(file_id)
     return file_id
 
 async def download_video(URL):
-    print("downloading video")
+    print("[+][DOWNLOADING VIDEO]")
     file_name = ""
     file_id = ""
     try:
@@ -147,12 +147,12 @@ async def download_video(URL):
             file_id += some_var['id']
             await save_json(file_id, some_var)
     except Exception as e:
-        print("165", e)
+        print("[CAN'T GET JSON FROM LINK VIDEO]", e)
     try:
         os.system(f'yt-dlp -f mp4 -P video -o "{str_buf_fix(file_name)}.mp4" {URL}')
-        print("download complete")
+        print("[+][DOWNLOAD VIDEO COMPLETE]")
     except Exception as e:
-        print("ERR DOWNLOAD")    
+        print("[-][ERR DOWNLOAD]")
     return file_id
 
 async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
