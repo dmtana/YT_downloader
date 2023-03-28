@@ -7,7 +7,6 @@ import random
 import datetime
 import time
 
-
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cэми']
 del_file = True
@@ -95,12 +94,12 @@ async def send_audio(message, bot, file_id, group=''):
                 os.remove(f'media_from_yt/{str_buf_fix(file_name)}.mp3')
                 print('[+][FILE DELETED]')
         except Exception as e:
-            print('[ERR OF DEL]')
+            print('[-][ERR OF FILE DELETE]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
         print("[-][ERROR SENDING]", e)
 
-async def download_audio(URL):
+async def download_media(URL, is_video=False):
     # Folder for album covers, if not exist
     folder = 'photo/Thumbnails'
     if not os.path.exists(folder):
@@ -115,45 +114,34 @@ async def download_audio(URL):
             file_name += some_var['title']
             file_id += some_var['id']
             await save_json(file_id, some_var)
-            l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
-            try:
-                # DOWNLOAD AND SAVE IMAGE
-                resource = urllib.request.urlopen(l)
-                with open(f'photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
-                    file.write(resource.read())
-            except:
-                print("[ERR DOWNLOAD IMAGE]")
     except Exception as e:
-        print("1111111111111", e)
-    try:
-        os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 ' # using ffmpeg.exe # 
-                  f'-P media_from_yt '  # path
-                  f'{URL}')  # link
-        print("[+][DOWNLOAD AUDIO COMPLETE]")
-    except Exception as e:
-        print("[-][ERR DOWNLOAD]")
-    await mp3_tag_editor.tag_edit(file_id)
-    return file_id
-
-async def download_video(URL):
-    print("[+][DOWNLOADING VIDEO]")
-    file_name = ""
-    file_id = ""
-    try:
-        with yt_dlp.YoutubeDL() as ydl:
-            some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
-            # WE GET TITLE AND ID FROM LINK
-            file_name += some_var['title']
-            file_id += some_var['id']
-            await save_json(file_id, some_var)
-    except Exception as e:
-        print("[CAN'T GET JSON FROM LINK VIDEO]", e)
-    try:
-        os.system(f'yt-dlp -f mp4 -P video -o "{str_buf_fix(file_name)}.mp4" {URL}')
-        print("[+][DOWNLOAD VIDEO COMPLETE]")
-    except Exception as e:
-        print("[-][ERR DOWNLOAD]")
-    return file_id
+            print("[CAN'T GET JSON FROM LINK]", e)        
+    if is_video:
+        print("[+][DOWNLOADING VIDEO]")
+        try:
+            os.system(f'yt-dlp -f mp4 -P video -o "{str_buf_fix(file_name)}.mp4" {URL}')
+            print("[+][DOWNLOAD VIDEO COMPLETE]")
+        except Exception as e:
+            print("[-][ERR DOWNLOAD]")
+    else:
+        l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
+        print("[+][DOWNLOADING AUDIO]")
+        try:
+            # DOWNLOAD AND SAVE IMAGE
+            resource = urllib.request.urlopen(l)
+            with open(f'photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
+                file.write(resource.read())
+        except:
+            print("[ERR DOWNLOAD IMAGE]")
+        try:
+            os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 ' # using ffmpeg.exe # 
+                      f'-P media_from_yt '  # path
+                      f'{URL}')  # link
+            print("[+][DOWNLOAD AUDIO COMPLETE]")
+        except Exception as e:
+            print("[-][ERR DOWNLOAD]")
+        await mp3_tag_editor.tag_edit(file_id)
+    return file_id            
 
 async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
     now = time.time()

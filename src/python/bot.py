@@ -27,16 +27,13 @@ async def echo(message):
         if "https://" in args['link']:
             # variable [message_info] need for delete message after sending file
             message_info = await bot.send_message(message.chat.id, "Downloading")
-            if args['video'] is False:
-                file_id = await helper.download_audio(args['link'])
-                await bot.delete_message(message.chat.id, message_info.message_id)
-                message_info = await bot.send_message(message.chat.id, "Download complete")
-                await helper.send_audio(message=message, bot=bot, file_id=file_id, group=args['group'])
-            elif args['video'] is True:
-                file_id = await helper.download_video(args['link'])
-                await bot.delete_message(message.chat.id, message_info.message_id)
-                message_info = await bot.send_message(message.chat.id, "Download complete")
+            file_id = await helper.download_media(args['link'], args['video'])
+            await bot.delete_message(message.chat.id, message_info.message_id)       
+            message_info = await bot.send_message(message.chat.id, "Download complete")
+            if args['video']:
                 await helper.send_video(message=message, bot=bot, file_id=file_id)
+            else:
+                await helper.send_audio(message=message, bot=bot, file_id=file_id, group=args['group'])                
             await bot.delete_message(message.chat.id, message_info.message_id)
         elif message.text.lower() in helper.cat:
             await helper.show_cat(message, bot)
