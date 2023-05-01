@@ -27,8 +27,10 @@ async def save_json(a, j): #this method save json info
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 
 def str_buf_fix(s):
-    trans_table = str.maketrans('', '', '"<>:/\\|?*')
+    trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
     s = s.translate(trans_table)
+    # some bugfix
+    # s.translate(str.maketrans("$", "S"))
     return s
 
 def get_args(m):
