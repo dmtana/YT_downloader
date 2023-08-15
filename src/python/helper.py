@@ -138,7 +138,7 @@ async def download_media(URL, is_video=False):
         try:
             os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 ' # using ffmpeg.exe # 
                       f'-P media_from_yt '  # path
-                      f'{URL}')  # link
+                      f'"{URL}"')  # link
             print("[+][DOWNLOAD AUDIO COMPLETE]")
         except Exception as e:
             print("[-][ERR DOWNLOAD]")
