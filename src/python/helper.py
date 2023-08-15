@@ -73,6 +73,7 @@ async def send_video(message, bot, file_id=''):
             print('[ERR OF DEL]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
+        await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(")
         print("[-][ERROR SENDING]", e)
 
 async def send_audio(message, bot, file_id, group=''):
@@ -99,6 +100,7 @@ async def send_audio(message, bot, file_id, group=''):
             print('[-][ERR OF FILE DELETE]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
+        await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(")
         print("[-][ERROR SENDING]", e)
 
 async def download_media(URL, is_video=False):
