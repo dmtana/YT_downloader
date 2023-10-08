@@ -8,7 +8,9 @@ import datetime
 import time
 
 # easter egg
-cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cэми']
+cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу']
+
+# flag for deleting files after sending to bot
 del_file = True
 
 async def save_json(a, j): #this method save json info
