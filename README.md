@@ -7,12 +7,12 @@ Based on <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> library.
 
 <h2>How to use</h2>
 
-Fisrt off all you need to install <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> on youre computer. 
+Fisrt off all you need to install <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> on youre computer PC or Linux or Mac. 
 Then you need download <a href="https://pypi.org/project/pyTelegramBotAPI/">telebot API</a> and 
-<a href="https://ffmpeg.org/" class="link">ffmpeg</a>. You need to place ffmpeg in the root of the project with the executable code. Get a bot token from a botfather. And start the bot.
+<a href="https://ffmpeg.org/" class="link">ffmpeg</a>. You need to place ffmpeg.exe in the root of the project with the executable code if You have Windows, for Linux or Mac just install using terminal or <a href="https://brew.sh/">Homebrew</a>. Get a bot token from a botfather. And start the bot.
 
 <pre>
-Application dependencies:
+Application dependencies python lib:
   <a 
   href="https://pypi.org/project/aiohttp/">aiohttp</a>, <a 
   href="https://pypi.org/project/pyTelegramBotAPI/">telebot</a>, <a 
