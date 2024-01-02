@@ -9,7 +9,7 @@ def get_token():
     except:
         print("CAN'T READ TOKEN!!! BOT STOPPED!!!")
 
-hello_str = "Я бот для скачивания музыки с YouTube, просто пришли мне ссылку и я отправлю тебе аудиофайл"
+hello_str = "Я бот для скачивания музыки с YouTube и не только, просто пришли мне ссылку и я отправлю тебе аудиофайл"
 
 bot = AsyncTeleBot(get_token())
 
