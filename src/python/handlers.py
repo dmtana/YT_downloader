@@ -3,14 +3,13 @@ from config import VERSION
 from config import START_TEXT
 from config import GROUP1, GROUP2, GROUP3
 
-from aiogram.types import Message, BotCommand, BotCommandScopeDefault, FSInputFile
+from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
 from aiogram.types import CallbackQuery
 from aiogram.filters import Command
 
 from aiogram.utils.chat_action import ChatActionSender
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Bot, Dispatcher, F
 from data_set import SelecMediaDownloader, TemporaryCache
 
@@ -81,7 +80,7 @@ async def text_handler(message: Message, bot: Bot):
                 key = generate_random_key()
                 key = key[0:38] # short coz callback_data is ***** -_-
                 # message_info = await bot.send_message(message.chat.id, "Select type of media", reply_markup=await keyboards.select_media_type())
-                message_info = await message.reply("Выберите тип контента\nSelect content type", 
+                message_info = await message.reply("Скачать\Download ->", 
                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
                 
                 await my_cache.add_to_cache(key, [message_info, args])
@@ -125,7 +124,7 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
             await bot.delete_message(message.chat.id, ms.message_id)      
 
 # DOWNLOAD AND SEND AUDIO
-async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=None):
+async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
     arr = await my_cache.get_from_cache(callback_data.key)
     message = arr[0]
     args = arr[1]

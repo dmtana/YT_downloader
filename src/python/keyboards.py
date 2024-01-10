@@ -1,5 +1,5 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from data_set import User, SelecMediaDownloader
+from data_set import SelecMediaDownloader
 from config import ADMIN_ID, ADMIN_ID2
 
 async def select_media_type(key: str, user_id=None):
@@ -18,12 +18,3 @@ async def select_media_type(key: str, user_id=None):
     else:    
         kb.adjust(2)
         return kb.as_markup()
-
-async def language_select_start_command():
-    kb = InlineKeyboardBuilder()
-
-    kb.button(text="English", callback_data=User(USER_NAME='name', LANGUAGE="english"))
-    kb.button(text="Русский", callback_data=User(USER_NAME='name', LANGUAGE="russian"))
-
-    kb.adjust(2)
-    return kb.as_markup()

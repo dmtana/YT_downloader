@@ -100,6 +100,7 @@ async def send_audio(message, bot, file_id, group=''):
                 # Not working, err on telebot api
                 await bot.send_audio(chat_id=f'@{group}', audio=audio)
             except Exception as e:
+                await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
         try:
             if del_file:
