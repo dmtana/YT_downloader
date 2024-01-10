@@ -1,6 +1,13 @@
 from mutagen.id3 import ID3, TIT2, TALB, TPE1, TCON, TDRC, APIC
 import os
 import json
+import ssl
+
+# fix for .venv python
+curren_path = os.path.dirname(__file__)+'/'
+
+# crutch for MacOS BADYLLLLL =D
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def str_buf_fix(s):
     trans_table = str.maketrans('', '', '"<>:/\\|?*')
@@ -10,15 +17,15 @@ def str_buf_fix(s):
 async def tag_edit(id):
     folder_name = 'JSON_INFO_MP3'
     try:
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
+        if not os.path.exists(curren_path+folder_name):
+            os.makedirs(curren_path+folder_name)
         # read tag from json info
-        with open(f"{folder_name}/{id}.txt", "r") as file:
+        with open(f"{curren_path+folder_name}/{id}.txt", "r") as file:
             ###   GET INFO FROM JSON   ###
             json_info = json.loads(file.read())
             title = json_info['title']
             # EDIT TAG
-            audiofile = ID3(f"media_from_yt/{str_buf_fix(title)}.mp3")
+            audiofile = ID3(f"{curren_path}media_from_yt/{str_buf_fix(title)}.mp3")
 
             try:
                 artist = json_info['artist']
@@ -32,7 +39,7 @@ async def tag_edit(id):
                 audiofile.add(TCON(encoding=3, text=""))  # genre
                 audiofile.add(TDRC(encoding=3, text=str(release_year)))
                 # EDIT IMAGE
-                with open(f"photo/Thumbnails/{id}.jpeg", "rb") as album_art:
+                with open(f"{curren_path}photo/Thumbnails/{id}.jpeg", "rb") as album_art:
                     audiofile.add(APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=album_art.read()))
             except Exception as e:
                 print("[BAD ATTRIBUTES]", e)
