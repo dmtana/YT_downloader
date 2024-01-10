@@ -1,4 +1,5 @@
 from aiogram.filters.callback_data import CallbackData
+from aiogram.fsm.state import State, StatesGroup
 
 # KOSTYL 
 class TemporaryCache:
@@ -14,3 +15,6 @@ class TemporaryCache:
 class SelecMediaDownloader(CallbackData, prefix=''):
     media_type: str
     key: str
+
+class FeedbackForm(StatesGroup):
+    RECEIVING_FEEDBACK = State()

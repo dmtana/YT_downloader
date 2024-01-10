@@ -5,8 +5,8 @@ from config import ADMIN_ID, ADMIN_ID2
 async def select_media_type(key: str, user_id=None):
     kb = InlineKeyboardBuilder()
 
-    kb.button(text="Audio", callback_data=SelecMediaDownloader(media_type='audio', key=key))
-    kb.button(text="Video", callback_data=SelecMediaDownloader(media_type='video', key=key))
+    kb.button(text="AUDIO", callback_data=SelecMediaDownloader(media_type='audio', key=key))
+    kb.button(text="VIDEO", callback_data=SelecMediaDownloader(media_type='video', key=key))
     
     if user_id in [ADMIN_ID,ADMIN_ID2]:
         kb.button(text="MUSIC", callback_data=SelecMediaDownloader(media_type='music', key=key))
