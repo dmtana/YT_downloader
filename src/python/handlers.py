@@ -3,25 +3,22 @@ from config import VERSION
 from config import START_TEXT
 from config import GROUP1, GROUP2, GROUP3
 
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, BotCommand, BotCommandScopeDefault, FSInputFile
+from aiogram.fsm.context import FSMContext
 
+from aiogram.types import CallbackQuery
 from aiogram.filters import Command
 
 from aiogram.utils.chat_action import ChatActionSender
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import Bot, Dispatcher, F
-
 from data_set import SelecMediaDownloader, TemporaryCache
 
 from key_gen import generate_random_key
 from side_menu import set_commands
 
-import key_gen
-import asyncio
-import python.old_helper as old_helper
-import side_menu
+import helper
 import keyboards
-import os
-import json
 
 my_cache = TemporaryCache()
 
@@ -75,7 +72,7 @@ async def get_version(message: Message, bot: Bot):
 async def text_handler(message: Message, bot: Bot):
 
     message_info = None
-    args = old_helper.get_args(message.text)
+    args = helper.get_args(message.text)
     print(message.text)
     try:
         if "https://" in args['link']:
@@ -92,8 +89,8 @@ async def text_handler(message: Message, bot: Bot):
             except Exception as e: 
                 print(f"ERROR - {str(e)}")
           
-        elif message.text.lower() in old_helper.cat:
-            await old_helper.show_cat(message, bot)
+        elif message.text.lower() in helper.cat:
+            await helper.show_cat(message, bot)
             print("мяу", end=" ")
         else:
             await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
@@ -118,8 +115,8 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     async with ChatActionSender.upload_video(chat_id=call.message.chat.id, bot=bot):
         try:
             ms = await call.message.answer(f'Downloading...')
-            file_id = await old_helper.download_media(args['link'], is_video=True)
-            await old_helper.send_video(message=message, bot=bot, file_id=file_id)
+            file_id = await helper.download_media(args['link'], is_video=True)
+            await helper.send_video(message=message, bot=bot, file_id=file_id)
             
         except Exception as e:
             await call.message.answer('ERROR INPUT, WRONG LINK')
@@ -140,9 +137,9 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
 
             ms = await call.message.answer('Downloading...')
         
-            file_id = await old_helper.download_media(args['link'])
+            file_id = await helper.download_media(args['link'])
             
-            await old_helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)                
+            await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)                
             
         except Exception as e:
             await call.message.answer('ERROR INPUT, WRONG LINK')
