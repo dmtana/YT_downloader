@@ -1,55 +1,40 @@
 import asyncio
 import helper
-from telebot.async_telebot import AsyncTeleBot
+import handlers
+import logging
 
-def get_token():
+from aiogram import Bot, Dispatcher
+
+from config import TOKEN
+
+# подготовка к запуску бота
+async def start():
+    # Logging to console 
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s) .%(funcName)s(%(lineno)d) - %(message)s")
+
+    # get token and set html parsing  
+    bot = Bot(token=TOKEN,
+              parse_mode='HTML')
+
+    dp = Dispatcher()
+
+    # handler registration
+    await handlers.handlers_reg(dp)
+  
+    # clear cache more than 3 days default
     try:
-        with open("token.txt", "r") as token:
-            return str(token.read())
-    except:
-        print("CAN'T READ TOKEN!!! BOT STOPPED!!!")
-
-hello_str = "Я бот для скачивания музыки с YouTube и не только, просто пришли мне ссылку и я отправлю тебе аудиофайл"
-
-bot = AsyncTeleBot(get_token())
-
-@bot.message_handler(commands=["start"])
-async def start(message):
-    str = f"Привет, {message.from_user.first_name}. \n"
-    await bot.send_message(message.chat.id, str + hello_str)
-
-@bot.message_handler(content_types=["text"])
-async def echo(message):
-    message_info = None
-    args = helper.get_args(message.text)
-    print(message.text)
-    try:
-        if "https://" in args['link']:
-            # variable [message_info] need for delete message after sending file
-            message_info = await bot.send_message(message.chat.id, "Downloading")
-            file_id = await helper.download_media(args['link'], args['video'])
-            await bot.delete_message(message.chat.id, message_info.message_id)       
-            message_info = await bot.send_message(message.chat.id, "Download complete")
-            if args['video']:
-                await helper.send_video(message=message, bot=bot, file_id=file_id)
-            else:
-                await helper.send_audio(message=message, bot=bot, file_id=file_id, group=args['group'])                
-            await bot.delete_message(message.chat.id, message_info.message_id)
-        elif message.text.lower() in helper.cat:
-            await helper.show_cat(message, bot)
-            print("мяу", end=" ")
-        else:
-            await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
-            print(message.chat.type)
-            print("[-][ERROR INPUT]")
+       await helper.delete_file()
     except Exception as e:
-        await bot.delete_message(message.chat.id, message_info.message_id)
-        await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
-        print("[-][ERROR IN MAIN PACKAGE]", e)
+        print(f'[ERROR CLEANING CACHE] - {str(e)}')    
 
-# clear cache
-asyncio.run(helper.delete_file())
+    # BOT STARTED 
+    try:
+        await dp.start_polling(bot)
+        print('[BOT STARTED]')
+    except Exception as ex:
+        print(f'[ERROR] {ex}')
+    finally:
+        await bot.session.close()
 
-print("BOT STARTED")
-# run non-stop
-asyncio.run(bot.polling(non_stop=True))
+if __name__ == "__main__":
+    asyncio.run(start())

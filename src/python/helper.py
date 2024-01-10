@@ -1,3 +1,5 @@
+import asyncio
+import subprocess
 import yt_dlp
 import mp3_tag_editor
 import os
@@ -7,18 +9,25 @@ import random
 import datetime
 import time
 
+from aiogram import Bot
+from aiogram.types import Message, FSInputFile
+from aiogram.utils.chat_action import ChatActionSender
+
 # easter egg
-cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу']
+cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cat', 'pusy']
 
 # flag for deleting files after sending to bot
 del_file = True
 
+# fix for .venv py
+curren_path = os.path.dirname(__file__)+'/'
+
 async def save_json(a, j): #this method save json info
-    folder = 'JSON_INFO_MP3'
+    folder = curren_path+'JSON_INFO_MP3'
     if not os.path.exists(folder):
         os.makedirs(folder)
     try: # a: name of ID / j: json str
-        with open(f"JSON_INFO_MP3/{a}.txt", "w") as json_file:
+        with open(f"{curren_path}JSON_INFO_MP3/{a}.txt", "w") as json_file:
             # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
             json_file.write(json.dumps(j))
             print('[+][JSON SAVE]')
@@ -26,6 +35,7 @@ async def save_json(a, j): #this method save json info
         print("[-][ERROR JSON SAVE]", e)
 
 # commands for download video
+# @deprecated(reason="added video choice") 
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 
 def str_buf_fix(s):
@@ -35,12 +45,13 @@ def str_buf_fix(s):
     # s.translate(str.maketrans("$", "S"))
     return s
 
-def get_args(m):
+def get_args(m : str):
     # dict pasrsing
     commands = {"link": '', "video": False, "group": ''}
     # trim and delete spaces between words
     list_str = " ".join(m.split()).split(" ")
     commands['link'] = list_str[0].replace('&feature=share', '')
+    # @deprecated(reason="added video choice") 
     if len(list_str) > 1:
         # for chekinig #
         print('[Video command]', '[',list_str[1], ']')
@@ -49,27 +60,26 @@ def get_args(m):
         else:
             commands['video'] = False
             print("INVALID VIDEO COMMAND")
+    # @deprecated(reason="added group choice")         
     if len(list_str) > 2:
         commands['group'] = list_str[2]
     print('[+][ARG]')    
-    # print(commands)
     return commands
 
 async def send_video(message, bot, file_id=''):
     file_name = ""
-
-    with open(f"JSON_INFO_MP3/{file_id}.txt", "r") as file:
+    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.txt", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
     print('[+][START SENDING]')
-
     try:
-        with open(f'video/{str_buf_fix(file_name)}.mp4', 'rb') as video:
-            await bot.send_document(message.chat.id, video)
+        video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
+        video = FSInputFile(video_file)   
+        await bot.send_document(message.chat.id, video) 
         print("[+][DONE SENDING]", datetime.datetime.now())
         try:
             if del_file:
-                os.remove(f'video/{str_buf_fix(file_name)}.mp4')
+                os.remove(f'{curren_path}video/{str_buf_fix(file_name)}.mp4')
                 print('[+][VIDEO FILE DELETED]')
         except Exception as e:
             print('[ERR OF DEL]')
@@ -80,36 +90,37 @@ async def send_video(message, bot, file_id=''):
 
 async def send_audio(message, bot, file_id, group=''):
     file_name = ""
-    with open(f"JSON_INFO_MP3/{file_id}.txt", "r") as file:
+    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.txt", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
     print('[+][START SENDING]')
     try:
-        with open(f'media_from_yt/{str_buf_fix(file_name)}.mp3', 'rb') as audio:
-            await bot.send_audio(message.chat.id, audio)
-            if group != '':
-                try:
-                    # Not working, err on telebot api
-                    await bot.send_audio(chat_id=f'@{group}', audio=audio)
-                except Exception as e:
-                    print('[Ошибка отправки в группу!]', e)
-        print("[+][DONE SENDING]", f'[{datetime.datetime.now()}]', sep='\n')
+        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
+        audio = FSInputFile(audio_file)
+        await bot.send_audio(message.chat.id, audio)
+        if group != '':
+            try:
+                # Not working, err on telebot api, IN AIOGRAM IT WORKING
+                await bot.send_audio(chat_id=f'@{group}', audio=audio)
+            except Exception as e:
+                await bot.send_message(chat_id=message.chat.id, text=str(e))
+                print('[Ошибка отправки в группу!]', e)
         try:
             if del_file:
-                os.remove(f'media_from_yt/{str_buf_fix(file_name)}.mp3')
+                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
                 print('[+][FILE DELETED]')
         except Exception as e:
             print('[-][ERR OF FILE DELETE]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING")
-        await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(")
+        await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
         print("[-][ERROR SENDING]", e)
 
 async def download_media(URL, is_video=False):
     # Folder for album covers, if not exist
-    folder = 'photo/Thumbnails'
+    folder = curren_path+'photo/Thumbnails'
     if not os.path.exists(folder):
-        os.makedirs(folder)
+        await os.makedirs(folder)
     # chat_id - folder
     file_name = ""
     file_id = ""
@@ -125,31 +136,62 @@ async def download_media(URL, is_video=False):
     if is_video:
         print("[+][DOWNLOADING VIDEO]")
         try:
-            os.system(f'yt-dlp -f mp4 -P video -o "{str_buf_fix(file_name)}.mp4" {URL}')
+            # ydl_opts = {
+            #     'format': 'mp4',
+            #     'outtmpl': f'{curren_path}video/{str_buf_fix(file_name)}.mp4',
+            # }
+            # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            #     await ydl.download([URL])
+            # await os.system(f'yt-dlp -f mp4 -P {curren_path}video -o "{str_buf_fix(file_name)}.mp4" {URL}')
+            cmd = f'yt-dlp -f mp4 -P {curren_path}video -o "{str_buf_fix(file_name)}.mp4" {URL}'
+            process = await asyncio.create_subprocess_shell(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
             print("[+][DOWNLOAD VIDEO COMPLETE]")
         except Exception as e:
-            print("[-][ERR DOWNLOAD]")
+            print("[-][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
     else:
         l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
         try:
             # DOWNLOAD AND SAVE IMAGE
             resource = urllib.request.urlopen(l)
-            with open(f'photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
+            with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                 file.write(resource.read())
         except:
             print("[ERR DOWNLOAD IMAGE]")
         try:
-            os.system(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 ' # using ffmpeg.exe # 
-                      f'-P media_from_yt '  # path
+            # ydl_opts = {
+            #     'format': 'ba',
+            #     'outtmpl': f'{curren_path}media_from_yt/{str_buf_fix(file_name)}',
+            #     'postprocessors': [{
+            #         'key': 'FFmpegExtractAudio',
+            #         'preferredcodec': 'mp3',
+            #         'preferredquality': '0',
+            #     }],
+            # }
+            # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            #     await ydl.download([URL])
+            cmd = str(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
+                      f'-P {curren_path}media_from_yt '+ # path
                       f'"{URL}"')  # link
+            # await os.system(cmd)  
+            process = await asyncio.create_subprocess_shell(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
             print("[+][DOWNLOAD AUDIO COMPLETE]")
         except Exception as e:
-            print("[-][ERR DOWNLOAD]")
+            print("[-][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
         await mp3_tag_editor.tag_edit(file_id)
     return file_id            
 
-async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
+async def delete_file(max_day=3, folder_path = f'{curren_path}JSON_INFO_MP3'):
     now = time.time()
     try:
         for file_name in os.listdir(folder_path):
@@ -161,9 +203,12 @@ async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
     except Exception as e:
         print('[NO DIR: JSON_INFO_MP3]')
 
-async def show_cat(message, bot):
-    try:
-        with open(f'photo/Cats/cat{random.randint(1, 7)}.jpeg', 'rb') as photo:
-            await bot.send_photo(message.chat.id, photo)
-    except Exception as e:
-        await bot.send_message(message.chat.id, "нима котика")
+async def show_cat(message: Message, bot: Bot):
+    async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
+        try:
+            cat_image_path = curren_path+f'photo/Cats/cat{random.randint(1, 7)}.jpeg'
+            image = FSInputFile(cat_image_path)
+            await bot.send_photo(message.chat.id, image)
+        except Exception as e:
+            print('[CAT IMAGE ERROR]')
+            await bot.send_message(message.chat.id, "нима котика")
