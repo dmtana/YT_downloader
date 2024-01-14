@@ -13,6 +13,8 @@ from aiogram import Bot
 from aiogram.types import Message, FSInputFile
 from aiogram.utils.chat_action import ChatActionSender
 
+from config import SITE_1
+
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cat', 'pusy']
 
@@ -68,14 +70,23 @@ def get_args(m : str):
 
 async def send_video(message, bot, file_id=''):
     file_name = ""
+    width = 1920
+    height = 1080
     with open(f"{curren_path}JSON_INFO_MP3/{file_id}.txt", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
+        try:
+            width = int(json_info['width'])
+            height = int(json_info['height'])
+        except Exception as e:
+            print('ERROR WIDTH AND HEIGHT')
+
     print('[+][START SENDING]')
     try:
         video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
-        video = FSInputFile(video_file)   
-        await bot.send_document(message.chat.id, video) 
+        video = FSInputFile(video_file)
+        # thumbnail = FSInputFile(f'{curren_path}киркоров.jpg')
+        await bot.send_video(chat_id=message.chat.id, video=video, width=width, height=height) 
         print("[+][DONE SENDING]", datetime.datetime.now())
         try:
             if del_file:
@@ -122,6 +133,7 @@ async def download_media(URL, is_video=False):
     if not os.path.exists(folder):
         await os.makedirs(folder)
     # chat_id - folder
+    error_message = ''    
     file_name = ""
     file_id = ""
     try:
@@ -136,21 +148,42 @@ async def download_media(URL, is_video=False):
     if is_video:
         print("[+][DOWNLOADING VIDEO]")
         try:
-            # ydl_opts = {
-            #     'format': 'mp4',
-            #     'outtmpl': f'{curren_path}video/{str_buf_fix(file_name)}.mp4',
-            # }
-            # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            #     await ydl.download([URL])
-            # await os.system(f'yt-dlp -f mp4 -P {curren_path}video -o "{str_buf_fix(file_name)}.mp4" {URL}')
-            cmd = f'yt-dlp -f mp4 -P {curren_path}video -o "{str_buf_fix(file_name)}.mp4" {URL}'
+            quality = 'b' # best
+            if SITE_1 in URL:
+                quality = 'w' # worst
+            cmd = str(f'yt-dlp -f {quality} '+
+                      # f'-S "filesize:50M" '+ #max file size around 50 Mb
+                      f'--max-filesize 50M '+ # KOSTYL for tg
+                      f'-P "{curren_path}video" '+
+                      f'-o "{str_buf_fix(file_name)}.mp4" '+ 
+                      f'"{URL}"')
             process = await asyncio.create_subprocess_shell(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
             stdout, stderr = await process.communicate()
+            # ydl_opts = {
+            #     'format': 'mp4',
+            #     'outtmpl': f'{curren_path}video/{str_buf_fix(file_name)}.mp4',
+            # }
+            # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            #     await ydl.download([URL])
+            # os.system(cmd)
+            print(cmd)
             print("[+][DOWNLOAD VIDEO COMPLETE]")
+            print(str(stdout), str(stderr), sep='\n')
+            if 'File is larger than max-filesize' in str(stdout):
+                error_message = str(f'<pre>File is larger than 50 Mb\n'+
+               'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
+               'поэтому да, очень большие файлы пока не будут работать. Извини. '+
+               'Этот лимит может быть изменен в будущем.</pre>')
+                try:
+                    os.remove(f'{curren_path}video/{str_buf_fix(file_name)}.mp4.part')
+                    print('[+][VIDEO PART-FILE DELETED]')
+                except Exception as e:
+                    print('[ERROR PART FILE DELETING]', e)
+                print(error_message)
         except Exception as e:
             print("[-][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
     else:
@@ -175,10 +208,14 @@ async def download_media(URL, is_video=False):
             # }
             # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             #     await ydl.download([URL])
-            cmd = str(f'yt-dlp -f ba -o "{str_buf_fix(file_name)}" -x --audio-quality 0 -x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
+            cmd = str(f'yt-dlp -f ba '+
+                      f'-o "{str_buf_fix(file_name)}" '+
+                      f'--max-filesize 50.0M '+ # KOSTYL
+                      f'-x --audio-quality 0 '+
+                      f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
                       f'-P {curren_path}media_from_yt '+ # path
                       f'"{URL}"')  # link
-            # await os.system(cmd)  
+            # os.system(cmd)  
             process = await asyncio.create_subprocess_shell(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -186,12 +223,21 @@ async def download_media(URL, is_video=False):
             )
             stdout, stderr = await process.communicate()
             print("[+][DOWNLOAD AUDIO COMPLETE]")
+            print(str(stdout), str(stderr), sep='\n')
+            if 'File is larger than max-filesize' in str(stdout):
+                error_message = str(f'<pre>File is larger than 50 Mb\n'+
+               'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
+               'поэтому да, очень большие файлы пока не будут работать. Извини. '+
+               'Этот лимит может быть изменен в будущем.</pre>')
+                print(error_message)
         except Exception as e:
             print("[-][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
         await mp3_tag_editor.tag_edit(file_id)
-    return file_id            
+    return file_id, error_message            
 
-async def delete_file(max_day=3, folder_path = f'{curren_path}JSON_INFO_MP3'):
+async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
+    folder_path = curren_path+folder_path
+    print(folder_path)
     now = time.time()
     try:
         for file_name in os.listdir(folder_path):

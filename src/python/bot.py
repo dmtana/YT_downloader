@@ -24,6 +24,8 @@ async def start():
     # clear cache more than 3 days default
     try:
        await helper.delete_file()
+       await helper.delete_file(1, 'photo/Thumbnails')
+       await helper.delete_file(1, 'video')
     except Exception as e:
         print(f'[ERROR CLEANING CACHE] - {str(e)}')    
 
@@ -32,7 +34,7 @@ async def start():
         await dp.start_polling(bot)
         print('[BOT STARTED]')
     except Exception as ex:
-        print(f'[ERROR] {ex}')
+        print(f'[ERROR IN START FILE] {ex}')
     finally:
         await bot.session.close()
 

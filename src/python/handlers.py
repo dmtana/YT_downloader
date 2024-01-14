@@ -1,18 +1,18 @@
 import asyncio
-from config import ADMIN_ID, ADMIN_ID2
+import json
+from config import ADMIN_ID, ADMIN_ID2, MODERATOR
 from config import VERSION
 from config import START_TEXT
 from config import GROUP1, GROUP2, GROUP3
 
-from aiogram.types import Message
-from aiogram.types import CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-
 from aiogram.utils.chat_action import ChatActionSender
-from aiogram import Bot, Dispatcher, F
-from data_set import SelecMediaDownloader, TemporaryCache, FeedbackForm
 
+from aiogram import Bot, Dispatcher, F
+
+from data_set import SelecMediaDownloader, TemporaryCache, FeedbackForm
 from key_gen import generate_random_key
 from side_menu import set_commands
 
@@ -91,7 +91,7 @@ async def text_handler(message: Message, bot: Bot):
                 await my_cache.add_to_cache(key, [message_info, args])
 
             except Exception as e: 
-                print(f"ERROR - {str(e)}")
+                print(f"ERROR in text_handler - {str(e)}")
           
         elif message.text.lower() in helper.cat:
             await helper.show_cat(message, bot)
@@ -119,9 +119,10 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     async with ChatActionSender.upload_video(chat_id=call.message.chat.id, bot=bot):
         try:
             ms = await call.message.answer(f'Downloading...')
-            file_id = await helper.download_media(args['link'], is_video=True)
+            file_id, err_msg = await helper.download_media(args['link'], is_video=True)
             await helper.send_video(message=message, bot=bot, file_id=file_id)
-            
+            if err_msg:
+                await call.message.answer(err_msg)
         except Exception as e:
             await call.message.answer('ERROR INPUT, WRONG LINK')
             print('ERROR VIDEO - ', e)
@@ -136,9 +137,21 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
         try:
-            ms = await call.message.answer('Downloading...')
-            file_id = await helper.download_media(args['link'])
-            await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)                
+            ms = None
+            if call.message.chat.id == MODERATOR:
+                ms = await call.message.answer('Downloading...', 
+                                           reply_markup=ReplyKeyboardMarkup(
+                                               keyboard=[[
+                                                   KeyboardButton(text='кисан кисан')
+                                                   ]], resize_keyboard=True, 
+                                                   one_time_keyboard=True, 
+                                                   selective=True))
+            else:
+                ms = await call.message.answer('Downloading...')    
+            file_id, err_msg = await helper.download_media(args['link'])
+            await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)
+            if err_msg:
+                await call.message.answer(err_msg)                
         except Exception as e:
             await call.message.answer('ERROR INPUT, WRONG LINK')
             print('ERROR AUDIO - ', e)
@@ -160,20 +173,31 @@ async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: Sele
 
 async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
     # FEEDBACK TO ADMIN
-    await message.reply("Я отправил твой отзыв автору бота.")
-    await bot.send_message(chat_id=ADMIN_ID, text=f"Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}")
+    try:
+        await message.reply(f"Я отправил твой отзыв автору бота.")
+        ms1 = await bot.send_message(chat_id=ADMIN_ID, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
+        ms2 = await bot.send_message(chat_id=ADMIN_ID2, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
+        await bot.pin_chat_message(chat_id=ms1.chat.id, message_id=ms1.message_id)
+        await bot.pin_chat_message(chat_id=ms2.chat.id, message_id=ms2.message_id)
+    except Exception as e:
+        print('[ERROR FEEDBACK]', e)
+        await message.reply('ERROR FEEDBACK, SEND MESSAGE TO ADMIN')
     await state.clear()
-
 
 #################################
 # FIRST ACTION AFTER LAUNCH BOT
 async def start_bot(bot: Bot):
     await set_commands(bot)
-    await bot.send_message(ADMIN_ID, "<b>BOT STARTED</b>")
-    await bot.send_message(ADMIN_ID2, "<b>BOT STARTED</b>")
-
+    try:
+        await bot.send_message(ADMIN_ID, "<b>BOT STARTED</b>")
+        await bot.send_message(ADMIN_ID2, "<b>BOT STARTED</b>")
+    except Exception as e:
+        print('[-][ERROR SEND MESSAGE TO ADMIN]', e)
 # LAST ACTION OF BOT 
 async def stop_bot(bot: Bot):
     # ALWAYS SILENT =) 
-    await bot.send_message(ADMIN_ID, "BOT STOPPED")  
-    await bot.send_message(ADMIN_ID2, "<b>BOT STARTED</b>")
+    try:    
+        await bot.send_message(ADMIN_ID, "<b>BOT STOPPED</b>")  
+        await bot.send_message(ADMIN_ID2, "<b>BOT STOPPED</b>")
+    except Exception as e:
+        print('[-][ERROR SEND MESSAGE TO ADMIN]', e)
