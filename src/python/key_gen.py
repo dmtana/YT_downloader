@@ -10,7 +10,6 @@ def generate_random_key():
 
     return sha512_hash
 
-# Пример использования
 # random_key = generate_random_key()
 # print("Сгенерированный случайный ключ SHA-512:", random_key)
 # print("Сгенерированный случайный ключ SHA-512:", random_key[0:50:])
