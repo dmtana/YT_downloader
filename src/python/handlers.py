@@ -1,7 +1,4 @@
-import asyncio
-import json
 from config import ADMIN_ID, ADMIN_ID2, MODERATOR
-from config import VERSION
 from config import START_TEXT
 from config import GROUP1, GROUP2, GROUP3
 
@@ -15,6 +12,8 @@ from aiogram import Bot, Dispatcher, F
 from data_set import SelecMediaDownloader, TemporaryCache, FeedbackForm
 from key_gen import generate_random_key
 from side_menu import set_commands
+
+from version import VERSION
 
 import helper
 import keyboards

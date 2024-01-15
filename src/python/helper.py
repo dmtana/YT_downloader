@@ -101,6 +101,7 @@ async def send_video(message, bot, file_id=''):
 
 async def send_audio(message, bot, file_id, group=''):
     file_name = ""
+    thumbnail = None
     with open(f"{curren_path}JSON_INFO_MP3/{file_id}.txt", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
@@ -108,11 +109,15 @@ async def send_audio(message, bot, file_id, group=''):
     try:
         audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
         audio = FSInputFile(audio_file)
-        await bot.send_audio(message.chat.id, audio)
+        try:
+            thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
+        except Exception as e:
+            print('[-][TRHUMBNAIL AUDIO MESSAGE ERROR]')    
+        await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail)
         if group != '':
             try:
                 # Not working, err on telebot api, IN AIOGRAM IT WORKING
-                await bot.send_audio(chat_id=f'@{group}', audio=audio)
+                await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
             except Exception as e:
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
@@ -247,7 +252,7 @@ async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
                     os.remove(file_path)
                     print(f'[DELETE FILE]: {file_path}')
     except Exception as e:
-        print('[NO DIR: JSON_INFO_MP3]')
+        print(f'[NO DIR: {folder_path}]')
 
 async def show_cat(message: Message, bot: Bot):
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
