@@ -1,4 +1,4 @@
-from config import VERSION
+from version import VERSION
 
 from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
