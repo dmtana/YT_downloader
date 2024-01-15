@@ -25,11 +25,17 @@ del_file = True
 curren_path = os.path.dirname(__file__)+'/'
 
 # START BUGFIX
-if not os.path.exists(curren_path+'video'):
-    os.makedirs(curren_path+'video')
-if not os.path.exists(curren_path+'media_from_yt'):
-    os.makedirs(curren_path+'media_from_yt') 
-
+async def create_folders():
+    if not os.path.exists(curren_path+'video'):
+        os.makedirs(curren_path+'video')
+    if not os.path.exists(curren_path+'media_from_yt'):
+        os.makedirs(curren_path+'media_from_yt') 
+    if not os.path.exists(curren_path+'photo/Thumbnails'):
+        os.makedirs(curren_path+'photo/Thumbnails') 
+    if not os.path.exists(curren_path+'JSON_INFO_MP3'):
+        os.makedirs(curren_path+'JSON_INFO_MP3') 
+    print('[+][Folder created!]')    
+    
 async def save_json(a, j): #this method save json info
     folder = curren_path+'JSON_INFO_MP3'
     if not os.path.exists(folder):
@@ -139,11 +145,6 @@ async def send_audio(message, bot, file_id, group=''):
         print("[-][ERROR SENDING]", e)
 
 async def download_media(URL, is_video=False):
-    # Folder for album covers, if not exist
-    folder = curren_path+'photo/Thumbnails'
-    if not os.path.exists(folder):
-        await os.makedirs(folder)
-    # chat_id - folder
     error_message = ''    
     file_name = ""
     file_id = ""
@@ -174,13 +175,7 @@ async def download_media(URL, is_video=False):
                 stderr=subprocess.PIPE
             )
             stdout, stderr = await process.communicate()
-            # ydl_opts = {
-            #     'format': 'mp4',
-            #     'outtmpl': f'{curren_path}video/{str_buf_fix(file_name)}.mp4',
-            # }
-            # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            #     await ydl.download([URL])
-            # os.system(cmd)
+
             print(cmd)
             print("[+][DOWNLOAD VIDEO COMPLETE]")
             print(str(stdout), str(stderr), sep='\n')
@@ -208,17 +203,6 @@ async def download_media(URL, is_video=False):
         except:
             print("[ERR DOWNLOAD IMAGE]")
         try:
-            # ydl_opts = {
-            #     'format': 'ba',
-            #     'outtmpl': f'{curren_path}media_from_yt/{str_buf_fix(file_name)}',
-            #     'postprocessors': [{
-            #         'key': 'FFmpegExtractAudio',
-            #         'preferredcodec': 'mp3',
-            #         'preferredquality': '0',
-            #     }],
-            # }
-            # with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            #     await ydl.download([URL])
             cmd = str(f'yt-dlp -f ba '+
                       f'-o "{str_buf_fix(file_name)}" '+
                       f'--max-filesize 50.0M '+ # KOSTYL

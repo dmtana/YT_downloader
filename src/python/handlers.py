@@ -83,8 +83,7 @@ async def text_handler(message: Message, bot: Bot):
             try:
                 key = generate_random_key()
                 key = key[0:38] # short coz callback_data is ***** -_-
-
-                message_info = await message.reply("Скачать\Download ->", 
+                message_info = await message.reply("СКАЧАТЬ ->", 
                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
                 
                 await my_cache.add_to_cache(key, [message_info, args])
@@ -133,10 +132,10 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     arr = await my_cache.get_from_cache(callback_data.key)
     message = arr[0]
     args = arr[1]
+    ms = None
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
         try:
-            ms = None
             if call.message.chat.id == MODERATOR:
                 ms = await call.message.answer('Downloading...', 
                                            reply_markup=ReplyKeyboardMarkup(
@@ -155,7 +154,9 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
             await call.message.answer('ERROR INPUT, WRONG LINK')
             print('ERROR AUDIO - ', e)
         finally:
-            await bot.delete_message(message.chat.id, ms.message_id) 
+            print('[!][FINALLY]')
+            if ms:
+                await bot.delete_message(message.chat.id, ms.message_id) 
 
 # DOWNLOAD AND SEND AUDIO TO GROUP
 async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=None):
