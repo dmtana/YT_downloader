@@ -23,6 +23,7 @@ async def start():
   
     # clear cache more than 3 days default
     try:
+       await helper.create_folders()
        await helper.delete_file()
        await helper.delete_file(1, 'photo/Thumbnails')
        await helper.delete_file(1, 'video')
