@@ -24,6 +24,12 @@ del_file = True
 # fix for .venv py
 curren_path = os.path.dirname(__file__)+'/'
 
+# START BUGFIX
+if not os.path.exists(curren_path+'video'):
+    os.makedirs(curren_path+'video')
+if not os.path.exists(curren_path+'media_from_yt'):
+    os.makedirs(curren_path+'media_from_yt') 
+
 async def save_json(a, j): #this method save json info
     folder = curren_path+'JSON_INFO_MP3'
     if not os.path.exists(folder):
