@@ -178,7 +178,7 @@ async def download_media(URL, is_video=False):
 
             print(cmd)
             print("[+][DOWNLOAD VIDEO COMPLETE]")
-            print(str(stdout), str(stderr), sep='\n')
+            print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
             if 'File is larger than max-filesize' in str(stdout):
                 error_message = str(f'<pre>File is larger than 50 Mb\n'+
                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -196,12 +196,14 @@ async def download_media(URL, is_video=False):
         l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
         try:
+            print('[DOWNLOADING AUDIO THUMBNAIL]')
             # DOWNLOAD AND SAVE IMAGE
             resource = urllib.request.urlopen(l)
             with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                 file.write(resource.read())
-        except:
-            print("[ERR DOWNLOAD IMAGE]")
+            print("[+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]")    
+        except Exception as e:
+            print("[-][ERR DOWNLOAD IMAGE]", e)
         try:
             cmd = str(f'yt-dlp -f ba '+
                       f'-o "{str_buf_fix(file_name)}" '+
@@ -218,7 +220,7 @@ async def download_media(URL, is_video=False):
             )
             stdout, stderr = await process.communicate()
             print("[+][DOWNLOAD AUDIO COMPLETE]")
-            print(str(stdout), str(stderr), sep='\n')
+            print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
             if 'File is larger than max-filesize' in str(stdout):
                 error_message = str(f'<pre>File is larger than 50 Mb\n'+
                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+

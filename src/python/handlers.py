@@ -154,7 +154,7 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
             await call.message.answer('ERROR INPUT, WRONG LINK')
             print('ERROR AUDIO - ', e)
         finally:
-            print('[!][FINALLY]')
+            print('[+][DONE DOWNLOADING]')
             if ms:
                 await bot.delete_message(message.chat.id, ms.message_id) 
 
