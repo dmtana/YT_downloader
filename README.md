@@ -22,7 +22,7 @@ Get a bot token from a botfather. And start the bot.
 # create this script
 # touch script.sh
 
-# make it runneble
+# make it runnable
 # chmod +x script.sh
 
 # run script
