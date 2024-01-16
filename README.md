@@ -30,46 +30,17 @@ Get a bot token from a botfather. And start the bot.
 
 echo "# Commands before start polling
 # cd /app/YT_downloader/src/python/ && git pull && python3 bot.py
-
-# Используем официальный образ Python
+  
 FROM python:3.8
-
-# Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
-
-# Копируем файлы из текущего каталога (где находится Dockerfile) в контейнер
 COPY . /app
-
-# Устанавливаем зависимости, если они есть
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Копирование entrypoint.sh в контейнер
-# COPY script.sh /app
-
-# Делаем entrypoint.sh исполняемым
 RUN chmod +x /app/script.sh
-
-# Загрузите проект из репозитория GitHub
 RUN git clone https://github.com/dmtana/YT_downloader
-
-# Переместить config.py файл в рабочую деректорию 
 RUN mv /app/config.py /app/YT_downloader/src/python
-
-# Устанавливаем ffmpeg
 RUN apt-get update
 RUN apt-get install -y ffmpeg
-
-# Установите рабочую директорию в /app/YT_downloader/src/python
 WORKDIR /app
-
-# Опционально: устанавливаем переменную окружения
-# ENV NAME World
-
-# Опционально: указываем порт, который будет слушать приложение
-# EXPOSE 8080
-
-# Команда, которая будет выполнена при запуске контейнера
-# Использую backslash для экранирования кавычек для bash скрипта
 CMD [\"./script.sh\"]" > Dockerfile
 
 echo "yt-dlp
