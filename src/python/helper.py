@@ -144,11 +144,24 @@ async def send_audio(message, bot, file_id, group=''):
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
         except Exception as e:
             print('[-][TRHUMBNAIL AUDIO MESSAGE ERROR]')    
-        await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail)
+        try:
+            await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail)
+        except Exception as e:
+            print('[-][ERROR AUDIO SENDING]', e)
+        try:
+            await bot.send_document(message.chat.id, audio)
+        except Exception as e:
+            print("[-][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
             try:
-                # Not working, err on telebot api, IN AIOGRAM IT WORKING
-                await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
+                try:
+                    await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
+                except Exception as e:
+                    print('[-][ERROR GROUP AUDIO SENDING]', e)
+                try:
+                    await bot.send_document(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
+                except Exception as e:
+                    print('[-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
             except Exception as e:
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
