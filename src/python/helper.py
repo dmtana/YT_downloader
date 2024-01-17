@@ -41,7 +41,7 @@ async def save_json(a, j): #this method save json info
     if not os.path.exists(folder):
         os.makedirs(folder)
     try: # a: name of ID / j: json str
-        with open(f"{curren_path}JSON_INFO_MP3/{a}.txt", "w") as json_file:
+        with open(f"{curren_path}JSON_INFO_MP3/{a}.json", "w") as json_file:
             # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
             json_file.write(json.dumps(j))
             print('[+][JSON SAVE]')
@@ -81,24 +81,43 @@ def get_args(m : str):
     return commands
 
 async def send_video(message, bot, file_id=''):
-    file_name = ""
-    width = 1920
-    height = 1080
-    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.txt", "r") as file:
+    duration = None
+    file_name = ''
+    thumbnail = None
+    width = None
+    height = None
+    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
         try:
             width = int(json_info['width'])
             height = int(json_info['height'])
+            print('[+][RES]', end='')
         except Exception as e:
-            print('ERROR WIDTH AND HEIGHT')
-
+            print('[-][ERROR WIDTH AND HEIGHT]')
+        try:
+            if width > height:
+                thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
+            print('[+][THUMB]', end='')    
+        except Exception as e:
+            print('[-][VIDEO THUMBNAIL ERROR]', e)
+        try:
+            duration = int(json_info['duration'])
+            print('[+][DUR]', end='')   
+        except Exception as e:
+            print('[-][ERROR DURATION VIDEO INFO]')    
     print('[+][START SENDING]')
     try:
         video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
         video = FSInputFile(video_file)
         # thumbnail = FSInputFile(f'{curren_path}киркоров.jpg')
-        await bot.send_video(chat_id=message.chat.id, video=video, width=width, height=height) 
+        await bot.send_video(
+            chat_id=message.chat.id, 
+            video=video, 
+            width=width, 
+            height=height,
+            duration=duration,
+            thumbnail=thumbnail) 
         print("[+][DONE SENDING]", datetime.datetime.now())
         try:
             if del_file:
@@ -114,7 +133,7 @@ async def send_video(message, bot, file_id=''):
 async def send_audio(message, bot, file_id, group=''):
     file_name = ""
     thumbnail = None
-    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.txt", "r") as file:
+    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
     print('[+][START SENDING]')
@@ -145,9 +164,10 @@ async def send_audio(message, bot, file_id, group=''):
         print("[-][ERROR SENDING]", e)
 
 async def download_media(URL, is_video=False):
+    some_var = ''
     error_message = ''    
-    file_name = ""
-    file_id = ""
+    file_name = ''
+    file_id = ''
     try:
         with yt_dlp.YoutubeDL() as ydl:
             some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
@@ -179,6 +199,16 @@ async def download_media(URL, is_video=False):
             print(cmd)
             print("[+][DOWNLOAD VIDEO COMPLETE]")
             print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
+            try:
+                l = some_var['thumbnails'][10]['url']               # l is link to image of this sound
+                print('[_][DOWNLOADING VIDEO THUMBNAIL]')
+                # DOWNLOAD AND SAVE IMAGE
+                resource = urllib.request.urlopen(l)
+                with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
+                    file.write(resource.read())
+                print("[+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
+            except Exception as e:
+                print("[-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
             if 'File is larger than max-filesize' in str(stdout):
                 error_message = str(f'<pre>File is larger than 50 Mb\n'+
                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -196,7 +226,7 @@ async def download_media(URL, is_video=False):
         l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
         try:
-            print('[DOWNLOADING AUDIO THUMBNAIL]')
+            print('[_][DOWNLOADING AUDIO THUMBNAIL]')
             # DOWNLOAD AND SAVE IMAGE
             resource = urllib.request.urlopen(l)
             with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
