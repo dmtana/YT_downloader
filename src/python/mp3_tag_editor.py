@@ -20,7 +20,7 @@ async def tag_edit(id):
         if not os.path.exists(curren_path+folder_name):
             os.makedirs(curren_path+folder_name)
         # read tag from json info
-        with open(f"{curren_path+folder_name}/{id}.txt", "r") as file:
+        with open(f"{curren_path+folder_name}/{id}.json", "r") as file:
             ###   GET INFO FROM JSON   ###
             json_info = json.loads(file.read())
             title = json_info['title']
