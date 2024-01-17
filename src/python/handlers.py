@@ -177,8 +177,10 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
         await message.reply(f"Я отправил твой отзыв автору бота.")
         ms1 = await bot.send_message(chat_id=ADMIN_ID, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
         ms2 = await bot.send_message(chat_id=ADMIN_ID2, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
+        ms3 = await bot.send_message(chat_id=MODERATOR, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
         await bot.pin_chat_message(chat_id=ms1.chat.id, message_id=ms1.message_id)
         await bot.pin_chat_message(chat_id=ms2.chat.id, message_id=ms2.message_id)
+        await bot.pin_chat_message(chat_id=ms3.chat.id, message_id=ms3.message_id)
     except Exception as e:
         print('[ERROR FEEDBACK]', e)
         await message.reply('ERROR FEEDBACK, SEND MESSAGE TO ADMIN')
