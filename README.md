@@ -62,8 +62,7 @@ MODERATOR2  = 0
 MODERATOR3  = 0
 MODERATOR4  = 0
 
-START_TEXT  = {'RUS':'Я простой бот что бы скачивать видео и аудио с различных популярных ресурсов, таких как YouTube, Instagram, TikTok и многих других. Просто отправь ссылку на то что хочешь скачать и я попытаюсь это скачать.',
-               'EN':'I am a simple bot designed to download videos and audio from various popular sources, such as YouTube, Instagram, TikTok, and many others. Just send me the link of what you want to download, and I will try to fetch it for you. '}
+START_TEXT  = {'RUS':'text'}
 
 GROUP1      = 'group1'
 GROUP2      = 'group2'
