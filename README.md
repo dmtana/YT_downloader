@@ -1,5 +1,4 @@
 # YT_downloader
-Simple bot for download music
 
 This is simple telegram bot for download music and small video (up to 50 Mb) from YouTube, Instagram, Tik-Tok etc. 
 
