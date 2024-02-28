@@ -132,10 +132,15 @@ async def send_video(message, bot, file_id=''):
 
 async def send_audio(message, bot, file_id, group=''):
     file_name = ""
+    duration = None
     thumbnail = None
     with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
+        try:   
+            duration += json_info['duration']
+        except Exception as e:
+            print('[-][DURATION GETING ERROR]')    
     print('[+][START SENDING]')
     try:
         audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
@@ -145,7 +150,7 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[-][TRHUMBNAIL AUDIO MESSAGE ERROR]')    
         try:
-            await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail)
+            await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail, duration=duration)
         except Exception as e:
             print('[-][ERROR AUDIO SENDING]', e)
             try:
@@ -155,7 +160,7 @@ async def send_audio(message, bot, file_id, group=''):
         if group != '':
             try:
                 try:
-                    await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
+                    await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
                 except Exception as e:
                     print('[-][ERROR GROUP AUDIO SENDING]', e)
                     try:
