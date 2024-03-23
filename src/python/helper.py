@@ -88,7 +88,7 @@ async def send_video(message, bot, file_id=''):
     height = None
     with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
         json_info = json.loads(file.read())
-        file_name += json_info['title']
+        file_name += json_info['id']
         try:
             width = int(json_info['width'])
             height = int(json_info['height'])
@@ -143,7 +143,7 @@ async def send_audio(message, bot, file_id, group=''):
             print('[-][DURATION GETING ERROR]')    
     print('[+][START SENDING]')
     try:
-        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
+        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_id)}.mp3'
         audio = FSInputFile(audio_file)
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
@@ -172,7 +172,7 @@ async def send_audio(message, bot, file_id, group=''):
                 print('[Ошибка отправки в группу!]', e)
         try:
             if del_file:
-                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
+                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_id)}.mp3')
                 print('[+][FILE DELETED]')
         except Exception as e:
             print('[-][ERR OF FILE DELETE]')
@@ -205,7 +205,7 @@ async def download_media(URL, is_video=False):
                       # f'-S "filesize:50M" '+ #max file size around 50 Mb
                       f'--max-filesize 50M '+ # KOSTYL for tg
                       f'-P "{curren_path}video" '+
-                      f'-o "{str_buf_fix(file_name)}.mp4" '+ 
+                      f'-o "{str_buf_fix(file_id)}.mp4" '+ 
                       f'"{URL}"')
             process = await asyncio.create_subprocess_shell(
                 cmd,
@@ -233,7 +233,7 @@ async def download_media(URL, is_video=False):
                'поэтому да, очень большие файлы пока не будут работать. Извини. '+
                'Этот лимит может быть изменен в будущем.</pre>')
                 try:
-                    os.remove(f'{curren_path}video/{str_buf_fix(file_name)}.mp4.part')
+                    os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
                     print('[+][VIDEO PART-FILE DELETED]')
                 except Exception as e:
                     print('[ERROR PART FILE DELETING]', e)
@@ -254,7 +254,7 @@ async def download_media(URL, is_video=False):
             print("[-][ERR DOWNLOAD IMAGE]", e)
         try:
             cmd = str(f'yt-dlp -f ba '+
-                      f'-o "{str_buf_fix(file_name)}" '+
+                      f'-o "{str_buf_fix(file_id)}" '+
                       f'--max-filesize 50.0M '+ # KOSTYL
                       f'-x --audio-quality 0 '+
                       f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
