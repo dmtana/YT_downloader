@@ -143,7 +143,7 @@ async def send_audio(message, bot, file_id, group=''):
             print('[-][DURATION GETING ERROR]')    
     print('[+][START SENDING]')
     try:
-        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_id)}.mp3'
+        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
         audio = FSInputFile(audio_file)
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
@@ -172,7 +172,7 @@ async def send_audio(message, bot, file_id, group=''):
                 print('[Ошибка отправки в группу!]', e)
         try:
             if del_file:
-                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_id)}.mp3')
+                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
                 print('[+][FILE DELETED]')
         except Exception as e:
             print('[-][ERR OF FILE DELETE]')
@@ -254,7 +254,7 @@ async def download_media(URL, is_video=False):
             print("[-][ERR DOWNLOAD IMAGE]", e)
         try:
             cmd = str(f'yt-dlp -f ba '+
-                      f'-o "{str_buf_fix(file_id)}" '+
+                      f'-o "{str_buf_fix(file_name)}" '+
                       f'--max-filesize 50.0M '+ # KOSTYL
                       f'-x --audio-quality 0 '+
                       f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
