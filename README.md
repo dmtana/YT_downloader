@@ -18,22 +18,25 @@ Get a bot token from a botfather. And start the bot.
 <pre >
 #!/bin/bash
 
-# create this script
+# создать скрипт
 # touch script.sh
 
-# make it runnable
+# Сделать его исполняемым
 # chmod +x script.sh
 
-# run script
+# install docker
+# sudo apt  install docker.io
+
+# Запустить на выполнение
 # ./script.sh
 
 echo "# Commands before start polling
 # cd /app/YT_downloader/src/python/ && git pull && python3 bot.py
-  
 FROM python:3.8
 WORKDIR /app
 COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
+# COPY script.sh /app
 RUN chmod +x /app/script.sh
 RUN git clone https://github.com/dmtana/YT_downloader
 RUN mv /app/config.py /app/YT_downloader/src/python
@@ -48,8 +51,7 @@ aiogram
 aiohttp
 ffmpeg-python" > requirements.txt
 
-echo "
-# 			    @my_new_bot:
+echo "# 			@NameTelegramBot_bot:
 TOKEN       = 'TOKEN'
 
 ADMIN_ID    = 0
@@ -62,17 +64,17 @@ MODERATOR2  = 0
 MODERATOR3  = 0
 MODERATOR4  = 0
 
-START_TEXT  = {'RUS':'text'}
+START_TEXT  = None
 
-GROUP1      = 'group1'
-GROUP2      = 'group2'
-GROUP3      = 'group3'
+GROUP1      = ''
+GROUP2      = ''
+GROUP3      = ''
 
 GROUP4      = ''
 GROUP5      = ''
 GROUP6      = ''
 
-SITE_1      = 'site1.com'
+SITE_1      = 'pornhub'
 SITE_2      = ''
 SITE_3      = ''
 
@@ -80,7 +82,6 @@ VAR_1       = None
 VAR_2       = None
 VAR_3       = None
 
-VERSION     = 'version'
 " > config.py
 
 echo "#!/bin/bash
@@ -88,8 +89,24 @@ cd /app/YT_downloader/src/python/
 git pull 
 python3 bot.py" > script.sh
 
-docker build -t new_docker_bot .
-docker run new_docker_bot
+docker build -t bot_image .
+
+echo "[+][BUILD COMPLETE]"
+
+# ТУТ ВОЗМОЖНО НАДО ВРУЧНУЮ ЗАПУСКАТЬ
+sudo usermod -aG docker $USER
+
+echo "[+][PERMISSION usermod -aG docker $USER]"
+
+sudo chmod 777 /var/run/docker.sock
+
+echo "[+][PERMISSION /var/run/docker.sock]"
+
+# Это не работает почему то 
+docker run bot_image
+
+echo "[+][BOT RUN]"
+
   </pre>  
 
 Finished bot implementation -> <a href="https://t.me/TestTelegramBot001_bot">YT_downloader</a>
