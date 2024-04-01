@@ -74,7 +74,7 @@ GROUP4      = ''
 GROUP5      = ''
 GROUP6      = ''
 
-SITE_1      = 'pornhub'
+SITE_1      = 'site1'
 SITE_2      = ''
 SITE_3      = ''
 
