@@ -1,4 +1,7 @@
-VERSION = '2024.03.23'
+VERSION = '2024.04.01'
+# fix facebook bug video downdload
+
+# VERSION = '2024.03.23'
 # edit save name type for audio and video on 23.03.2024 and upd yt-dlp lib.
 
 # VERSION = '2024.02.27'

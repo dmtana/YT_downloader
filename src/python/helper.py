@@ -45,6 +45,7 @@ async def save_json(a, j): #this method save json info
             # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
             json_file.write(json.dumps(j))
             print('[+][JSON SAVE]')
+            return True
     except Exception as e:
         print("[-][ERROR JSON SAVE]", e)
 
@@ -186,60 +187,76 @@ async def download_media(URL, is_video=False):
     error_message = ''    
     file_name = ''
     file_id = ''
-    try:
-        with yt_dlp.YoutubeDL() as ydl:
-            some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
-            # WE GET TITLE AND ID FROM LINK
-            file_name += some_var['title']
-            file_id += some_var['id']
-            await save_json(file_id, some_var)
-    except Exception as e:
-            print("[CAN'T GET JSON FROM LINK]", e)        
-    if is_video:
-        print("[+][DOWNLOADING VIDEO]")
+    done = 0
+    while done < 10: # kostyl for facebook reels
+        print('[TRY NUMBER ]', done)
         try:
-            quality = 'b' # best
-            if SITE_1 in URL:
-                quality = 'w' # worst
-            cmd = str(f'yt-dlp -f {quality} '+
-                      # f'-S "filesize:50M" '+ #max file size around 50 Mb
-                      f'--max-filesize 50M '+ # KOSTYL for tg
-                      f'-P "{curren_path}video" '+
-                      f'-o "{str_buf_fix(file_id)}.mp4" '+ 
-                      f'"{URL}"')
-            process = await asyncio.create_subprocess_shell(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
-
-            print(cmd)
-            print("[+][DOWNLOAD VIDEO COMPLETE]")
-            print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
-            try:
-                l = some_var['thumbnails'][10]['url']               # l is link to image of this sound
-                print('[_][DOWNLOADING VIDEO THUMBNAIL]')
-                # DOWNLOAD AND SAVE IMAGE
-                resource = urllib.request.urlopen(l)
-                with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
-                    file.write(resource.read())
-                print("[+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
-            except Exception as e:
-                print("[-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
-            if 'File is larger than max-filesize' in str(stdout):
-                error_message = str(f'<pre>File is larger than 50 Mb\n'+
-               'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
-               'поэтому да, очень большие файлы пока не будут работать. Извини. '+
-               'Этот лимит может быть изменен в будущем.</pre>')
-                try:
-                    os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
-                    print('[+][VIDEO PART-FILE DELETED]')
-                except Exception as e:
-                    print('[ERROR PART FILE DELETING]', e)
-                print(error_message)
+            with yt_dlp.YoutubeDL() as ydl:
+                some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
+                # WE GET TITLE AND ID FROM LINK
+                file_name = some_var['title']
+                file_id = some_var['id']
+                if await save_json(file_id, some_var):
+                    done = 10
         except Exception as e:
-            print("[-][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
+                print("[CAN'T GET JSON FROM LINK]", e)  
+        if 'facebook' in URL:    # kostyl for facebook reels
+            done += 1 
+        else:   
+            done = 10                     
+    if is_video:
+        done = 0
+        while done < 10: # kostyl for facebook reels
+            print("[+][DOWNLOADING VIDEO]")
+            try:
+                quality = 'b' # best
+                if SITE_1 in URL:
+                    quality = 'w' # worst
+                cmd = str(f'yt-dlp -f {quality} '+
+                        # f'-S "filesize:50M" '+ #max file size around 50 Mb
+                        f'--max-filesize 50M '+ # KOSTYL for tg
+                        f'-P "{curren_path}video" '+
+                        f'-o "{str_buf_fix(file_id)}.mp4" '+ 
+                        f'"{URL}"')
+                process = await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                stdout, stderr = await process.communicate()
+
+                print(cmd)
+                print("[+][DOWNLOAD VIDEO COMPLETE]")
+                print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
+                if 'already been downloaded' in stdout.decode("utf-8"):
+                    done = 10
+                try:
+                    l = some_var['thumbnails'][10]['url']               # l is link to image of this sound
+                    print('[_][DOWNLOADING VIDEO THUMBNAIL]')
+                    # DOWNLOAD AND SAVE IMAGE
+                    resource = urllib.request.urlopen(l)
+                    with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
+                        file.write(resource.read())
+                    print("[+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
+                except Exception as e:
+                    print("[-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
+                if 'File is larger than max-filesize' in str(stdout):
+                    error_message = str(f'<pre>File is larger than 50 Mb\n'+
+                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
+                'поэтому да, очень большие файлы пока не будут работать. Извини. '+
+                'Этот лимит может быть изменен в будущем.</pre>')
+                    try:
+                        os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
+                        print('[+][VIDEO PART-FILE DELETED]')
+                    except Exception as e:
+                        print('[ERROR PART FILE DELETING]', e)
+                    print(error_message)
+            except Exception as e:
+                print("[-][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
+            if 'facebook' in URL:    # kostyl for facebook reels
+                done += 1
+            else:
+                done = 10
     else:
         l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
