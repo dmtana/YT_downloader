@@ -35,6 +35,7 @@ echo "# Commands before start polling
 FROM python:3.8
 WORKDIR /app
 COPY . /app
+RUN python -m pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 # COPY script.sh /app
 RUN chmod +x /app/script.sh
@@ -54,17 +55,11 @@ ffmpeg-python" > requirements.txt
 echo "# 			@NameTelegramBot_bot:
 TOKEN       = 'TOKEN'
 
-ADMIN_ID    = 0
-ADMIN_ID2   = 0
-ADMIN_ID3   = 0
-ADMIN_ID4   = 0
+ADMINS_ID   = []
 
-MODERATOR   = 0
-MODERATOR2  = 0
-MODERATOR3  = 0
-MODERATOR4  = 0
+MODERATORS_ID = []
 
-START_TEXT  = None
+START_TEXT  = {}
 
 GROUP1      = ''
 GROUP2      = ''
@@ -81,7 +76,6 @@ SITE_3      = ''
 VAR_1       = None
 VAR_2       = None
 VAR_3       = None
-
 " > config.py
 
 echo "#!/bin/bash
@@ -89,23 +83,27 @@ cd /app/YT_downloader/src/python/
 git pull 
 python3 bot.py" > script.sh
 
-docker build -t bot_image .
+DOCKER_IMAGE_BOT_NAME=new_docker_bot
 
-echo "[+][BUILD COMPLETE]"
+if docker build -t $DOCKER_IMAGE_BOT_NAME .; then
+    echo "[+][BUILD COMPLETE image name=$DOCKER_IMAGE_BOT_NAME]"
+else
+    echo "[X][BUILD FAILED]"
+fi
 
-# ТУТ ВОЗМОЖНО НАДО ВРУЧНУЮ ЗАПУСКАТЬ
-sudo usermod -aG docker $USER
+# Добавление текущего пользователя в группу docker
+if sudo usermod -aG docker $USER; then
+    echo "[+][PERMISSION usermod -aG docker $USER]"
+else
+    echo "[X][FAILED TO GRANT PERMISSIONS]"
+fi
 
-echo "[+][PERMISSION usermod -aG docker $USER]"
-
-sudo chmod 777 /var/run/docker.sock
-
-echo "[+][PERMISSION /var/run/docker.sock]"
-
-# Это не работает почему то 
-docker run bot_image
-
-echo "[+][BOT RUN]"
+# Установка разрешений на доступ к docker.sock
+if sudo chmod 777 /var/run/docker.sock; then
+    echo "[+][PERMISSION /var/run/docker.sock]"
+else
+    echo "[X][FAILED TO GRANT PERMISSIONS]"
+fi
 
   </pre>  
 
