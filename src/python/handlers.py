@@ -1,4 +1,4 @@
-from config import ADMIN_ID, ADMIN_ID2, MODERATOR, ADMINS_ID, MODERATORS_ID
+from config import ADMINS_ID, MODERATORS_ID
 from config import START_TEXT
 from config import GROUP1, GROUP2, GROUP3
 
