@@ -1,4 +1,4 @@
-from config import ADMIN_ID, ADMIN_ID2, MODERATOR
+from config import ADMIN_ID, ADMIN_ID2, MODERATOR, ADMINS_ID, MODERATORS_ID
 from config import START_TEXT
 from config import GROUP1, GROUP2, GROUP3
 
@@ -13,7 +13,7 @@ from data_set import SelecMediaDownloader, TemporaryCache, FeedbackForm
 from key_gen import generate_random_key
 from side_menu import set_commands
 
-from version import VERSION
+from version import VERSION, description
 
 import helper
 import keyboards
@@ -66,7 +66,7 @@ async def get_feedback(message: Message, state: FSMContext):
 
 # VERSION COMMAND HANDLER
 async def get_version(message: Message, bot: Bot):
-    await message.answer(f'Version: {VERSION}')
+    await message.answer(f'Version: <b>{VERSION}</b>{description}')
 
 
 #################################
@@ -129,25 +129,17 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
 
 # DOWNLOAD AND SEND AUDIO
 async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
+    download_and_send_audio_status = 0
     arr = await my_cache.get_from_cache(callback_data.key)
     message = arr[0]
     args = arr[1]
     ms = None
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
-        try:
-            if call.message.chat.id == MODERATOR:
-                ms = await call.message.answer('Downloading...', 
-                                           reply_markup=ReplyKeyboardMarkup(
-                                               keyboard=[[
-                                                   KeyboardButton(text='кисан кисан')
-                                                   ]], resize_keyboard=True, 
-                                                   one_time_keyboard=True, 
-                                                   selective=True))
-            else:
-                ms = await call.message.answer('Downloading...')    
+        try:    
+            ms = await call.message.answer('Downloading...')    
             file_id, err_msg = await helper.download_media(args['link'])
-            await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)
+            download_and_send_audio_status = await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)
             if err_msg:
                 await call.message.answer(err_msg)                
         except Exception as e:
@@ -157,6 +149,7 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
             print('[+][DONE DOWNLOADING]')
             if ms:
                 await bot.delete_message(message.chat.id, ms.message_id) 
+    return download_and_send_audio_status            
 
 # DOWNLOAD AND SEND AUDIO TO GROUP
 async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=None):
@@ -168,22 +161,34 @@ async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: Sele
     if callback_data.media_type == 'rock':
         group=GROUP3
 
-    await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group)
-    await call.message.answer(f'<b>In the group {group} +</b>')
+    send_status = await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group)
+    if send_status > 5:
+        await call.message.answer(f'<b>In the group {group} +</b>')
 
 async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
-    # FEEDBACK TO ADMIN
+    # FEEDBACK TO ADMINS
+    ms = []
     try:
-        await message.reply(f"Я отправил твой отзыв автору бота.")
-        ms1 = await bot.send_message(chat_id=ADMIN_ID, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
-        ms2 = await bot.send_message(chat_id=ADMIN_ID2, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
-        ms3 = await bot.send_message(chat_id=MODERATOR, text=f"<pre>Отзыв от пользователя с ID \n<b>{message.from_user.id},\nИмя пользователя:\n{message.from_user.full_name}</b>: \n{message.text}</pre>")
-        await bot.pin_chat_message(chat_id=ms1.chat.id, message_id=ms1.message_id)
-        await bot.pin_chat_message(chat_id=ms2.chat.id, message_id=ms2.message_id)
-        await bot.pin_chat_message(chat_id=ms3.chat.id, message_id=ms3.message_id)
+        for admin_id in ADMINS_ID:
+            ms.append(await bot.send_message(chat_id=admin_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>")) 
+    except Exception as e:
+        print('[ERROR FEEDBACK TO ADMINS]', e)
+        await message.reply('ERROR FEEDBACK, SEND MESSAGE TO ADMINS')
+    # FEEDBACK TO MODERATORS
+    try:
+        for mod_id in MODERATORS_ID:
+            ms.append(await bot.send_message(chat_id=mod_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>"))
     except Exception as e:
         print('[ERROR FEEDBACK]', e)
-        await message.reply('ERROR FEEDBACK, SEND MESSAGE TO ADMIN')
+        await message.reply('ERROR FEEDBACK, SEND MESSAGE TO MODERATORS')
+    # TRY TO PIN    
+    try:
+        for rem_ms in ms:
+            await bot.pin_chat_message(chat_id=rem_ms.chat.id, message_id=rem_ms.message_id)
+            ms.remove(rem_ms)   
+        await message.reply(f"Я отправил твой отзыв автору бота.")    
+    except Exception as e:  
+        await message.reply('ERROR FEEDBACK, CAN\'T PIN MESSAGE')      
     await state.clear()
 
 #################################
@@ -191,15 +196,15 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
 async def start_bot(bot: Bot):
     await set_commands(bot)
     try:
-        await bot.send_message(ADMIN_ID, "<b>BOT STARTED</b>")
-        await bot.send_message(ADMIN_ID2, "<b>BOT STARTED</b>")
+        for admin_id in ADMINS_ID:
+            await bot.send_message(admin_id, "<b>BOT STARTED</b>")
     except Exception as e:
         print('[-][ERROR SEND MESSAGE TO ADMIN]', e)
 # LAST ACTION OF BOT 
 async def stop_bot(bot: Bot):
     # ALWAYS SILENT =) 
-    try:    
-        await bot.send_message(ADMIN_ID, "<b>BOT STOPPED</b>")  
-        await bot.send_message(ADMIN_ID2, "<b>BOT STOPPED</b>")
+    try: 
+        for admin_id in ADMINS_ID:    
+            await bot.send_message(admin_id, "<b>BOT STOPPED</b>") 
     except Exception as e:
         print('[-][ERROR SEND MESSAGE TO ADMIN]', e)

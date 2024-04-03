@@ -1,5 +1,12 @@
-VERSION = '2024.04.01'
-# fix facebook bug video downdload
+VERSION = '2024.04.03'
+description = '''
+- added description of version changes
+- edit moderator list and admin list for more flexibility
+- removed easter egg called "kisan kisan"
+- edit group sending bug'''
+
+# VERSION = '2024.04.01'
+# description = ' - fixed bug when downloading reels from facebook'
 
 # VERSION = '2024.03.23'
 # edit save name type for audio and video on 23.03.2024 and upd yt-dlp lib.
