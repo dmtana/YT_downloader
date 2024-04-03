@@ -132,6 +132,7 @@ async def send_video(message, bot, file_id=''):
         print("[-][ERROR SENDING]", e)
 
 async def send_audio(message, bot, file_id, group=''):
+    send_audio_status = 0
     file_name = ""
     duration = None
     thumbnail = None
@@ -159,18 +160,22 @@ async def send_audio(message, bot, file_id, group=''):
             except Exception as e:
                 print("[-][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
+            # try:
             try:
-                try:
-                    await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
-                except Exception as e:
-                    print('[-][ERROR GROUP AUDIO SENDING]', e)
-                    try:
-                        await bot.send_document(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
-                    except Exception as e:
-                        print('[-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
+                await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
+                send_audio_status = 6
             except Exception as e:
+                print('[-][ERROR GROUP AUDIO SENDING]', e)
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
+                try:
+                    await bot.send_document(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
+                except Exception as e:
+                    print('[-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
+            # except Exception as e:
+            #     await bot.send_message(chat_id=message.chat.id, text=str(e))
+            #     print('[Ошибка отправки в группу!]', e)
+                    
         try:
             if del_file:
                 os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
@@ -181,6 +186,7 @@ async def send_audio(message, bot, file_id, group=''):
         await bot.send_message(message.chat.id, "ERROR SENDING")
         await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
         print("[-][ERROR SENDING]", e)
+    return send_audio_status
 
 async def download_media(URL, is_video=False):
     some_var = ''
@@ -261,7 +267,6 @@ async def download_media(URL, is_video=False):
         l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
         try:
-            print('[_][DOWNLOADING AUDIO THUMBNAIL]')
             # DOWNLOAD AND SAVE IMAGE
             resource = urllib.request.urlopen(l)
             with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
