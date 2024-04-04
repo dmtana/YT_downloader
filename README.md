@@ -55,11 +55,11 @@ ffmpeg-python" > requirements.txt
 echo "# 			@NameTelegramBot_bot:
 TOKEN       = 'TOKEN'
 
-ADMINS_ID   = []
+ADMINS_ID   = [0, 0]
 
-MODERATORS_ID = []
+MODERATORS_ID = [0]
 
-START_TEXT  = {}
+START_TEXT  = {'RUS':'start text', 'ENG':'start text'}
 
 GROUP1      = ''
 GROUP2      = ''
@@ -92,14 +92,14 @@ else
 fi
 
 # Добавление текущего пользователя в группу docker
-if sudo usermod -aG docker $USER; then
+if usermod -aG docker $USER; then
     echo "[+][PERMISSION usermod -aG docker $USER]"
 else
     echo "[X][FAILED TO GRANT PERMISSIONS]"
 fi
 
 # Установка разрешений на доступ к docker.sock
-if sudo chmod 777 /var/run/docker.sock; then
+if chmod 777 /var/run/docker.sock; then
     echo "[+][PERMISSION /var/run/docker.sock]"
 else
     echo "[X][FAILED TO GRANT PERMISSIONS]"
