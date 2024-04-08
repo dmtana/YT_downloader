@@ -1,6 +1,6 @@
-from config import ADMINS_ID, MODERATORS_ID
-from config import START_TEXT
-from config import GROUP1, GROUP2, GROUP3
+from config.config import ADMINS_ID, MODERATORS_ID
+from config.config import START_TEXT
+from config.config import GROUP1, GROUP2, GROUP3
 
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command

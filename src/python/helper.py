@@ -13,7 +13,7 @@ from aiogram import Bot
 from aiogram.types import Message, FSInputFile
 from aiogram.utils.chat_action import ChatActionSender
 
-from config import SITE_1
+from config.config import SITE_1
 
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cat', 'pusy']
@@ -194,7 +194,7 @@ async def download_media(URL, is_video=False):
     file_name = ''
     file_id = ''
     done = 0
-    while done < 10: # kostyl for facebook reels
+    while done < 15: # kostyl for facebook reels
         print('[TRY NUMBER ]', done)
         try:
             with yt_dlp.YoutubeDL() as ydl:
@@ -203,16 +203,16 @@ async def download_media(URL, is_video=False):
                 file_name = some_var['title']
                 file_id = some_var['id']
                 if await save_json(file_id, some_var):
-                    done = 10
+                    done = 15
         except Exception as e:
                 print("[CAN'T GET JSON FROM LINK]", e)  
         if 'facebook' in URL:    # kostyl for facebook reels
             done += 1 
         else:   
-            done = 10                     
+            done = 15                     
     if is_video:
         done = 0
-        while done < 10: # kostyl for facebook reels
+        while done < 15: # kostyl for facebook reels
             print("[+][DOWNLOADING VIDEO]")
             try:
                 quality = 'b' # best
@@ -235,7 +235,7 @@ async def download_media(URL, is_video=False):
                 print("[+][DOWNLOAD VIDEO COMPLETE]")
                 print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
                 if 'already been downloaded' in stdout.decode("utf-8"):
-                    done = 10
+                    done = 15
                 try:
                     l = some_var['thumbnails'][10]['url']               # l is link to image of this sound
                     print('[_][DOWNLOADING VIDEO THUMBNAIL]')
@@ -262,7 +262,7 @@ async def download_media(URL, is_video=False):
             if 'facebook' in URL:    # kostyl for facebook reels
                 done += 1
             else:
-                done = 10
+                done = 15
     else:
         l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
