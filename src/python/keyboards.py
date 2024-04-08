@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from data_set import SelecMediaDownloader
-from config import ADMINS_ID
+from config.config import ADMINS_ID
 
 async def select_media_type(key: str, user_id=None):
     kb = InlineKeyboardBuilder()
