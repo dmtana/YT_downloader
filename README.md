@@ -18,23 +18,23 @@ Get a bot token from a botfather. And start the bot.
 <pre >
 #!/bin/bash
 
-# создать скрипт
+# [ create this script ]
 # touch creator.sh
 
-# Сделать его исполняемым
+# [ make it runnable ] 
 # chmod +x creator.sh
 
-# install docker
+# [ install docker ]
 # sudo apt  install docker.io
 
-# Запустить на выполнение
+# [ run script ]
 # sudo bash creator.sh
 
 echo "
 FROM python:3.8
 WORKDIR /app
 COPY . /app
-RUN python -m pip install --upgrade pip
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN chmod +x /app/script.sh
 RUN git clone https://github.com/dmtana/YT_downloader
@@ -43,6 +43,11 @@ RUN apt-get update
 RUN apt-get install -y ffmpeg
 CMD [\"./script.sh\"]" > Dockerfile
 
+echo "#!/bin/bash
+cd /app/YT_downloader/src/python/ 
+git pull 
+python3 bot.py" > script.sh
+    
 echo "yt-dlp
 aiofiles
 aiogram
@@ -50,36 +55,24 @@ aiohttp
 ffmpeg-python" > requirements.txt
 
 echo "
-# 			@NameTelegramBot_bot:
+#@NameTelegramBot_bot:
 TOKEN       = 'TOKEN'
-
 ADMINS_ID   = [0, 0]
-
 MODERATORS_ID = [0]
-
 START_TEXT  = {'RUS':'start text', 'ENG':'start text'}
-
 GROUP1      = ''
 GROUP2      = ''
 GROUP3      = ''
-
 GROUP4      = ''
 GROUP5      = ''
 GROUP6      = ''
-
 SITE_1      = 'site1'
 SITE_2      = ''
 SITE_3      = ''
-
 VAR_1       = None
 VAR_2       = None
 VAR_3       = None
 " > config.py
-
-echo "#!/bin/bash
-cd /app/YT_downloader/src/python/ 
-git pull 
-python3 bot.py" > script.sh
 
 DOCKER_IMAGE_BOT_NAME=new_docker_bot
 
@@ -88,22 +81,16 @@ if docker build -t $DOCKER_IMAGE_BOT_NAME .; then
 else
     echo "[X][BUILD FAILED]"
 fi
-
-# Добавление текущего пользователя в группу docker
 if usermod -aG docker $USER; then
     echo "[+][PERMISSION usermod -aG docker $USER]"
 else
     echo "[X][FAILED TO GRANT PERMISSIONS]"
 fi
-
-# Установка разрешений на доступ к docker.sock
 if chmod 777 /var/run/docker.sock; then
     echo "[+][PERMISSION /var/run/docker.sock]"
 else
     echo "[X][FAILED TO GRANT PERMISSIONS]"
 fi
-    
-# Запуск контейнера из образа DOCKER_IMAGE_BOT_NAME
 # if docker run -d bot_image; then
 #    echo "[+][BOT RUN]"
 # else
