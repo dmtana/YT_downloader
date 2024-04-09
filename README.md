@@ -19,31 +19,28 @@ Get a bot token from a botfather. And start the bot.
 #!/bin/bash
 
 # создать скрипт
-# touch script.sh
+# touch creator.sh
 
 # Сделать его исполняемым
-# chmod +x script.sh
+# chmod +x creator.sh
 
 # install docker
 # sudo apt  install docker.io
 
 # Запустить на выполнение
-# ./script.sh
+# sudo bash creator.sh
 
-echo "# Commands before start polling
-# cd /app/YT_downloader/src/python/ && git pull && python3 bot.py
+echo "
 FROM python:3.8
 WORKDIR /app
 COPY . /app
 RUN python -m pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-# COPY script.sh /app
 RUN chmod +x /app/script.sh
 RUN git clone https://github.com/dmtana/YT_downloader
-RUN mv /app/config.py /app/YT_downloader/src/python
+RUN mv /app/config.py /app/YT_downloader/src/python/config/
 RUN apt-get update
 RUN apt-get install -y ffmpeg
-WORKDIR /app
 CMD [\"./script.sh\"]" > Dockerfile
 
 echo "yt-dlp
@@ -52,7 +49,8 @@ aiogram
 aiohttp
 ffmpeg-python" > requirements.txt
 
-echo "# 			@NameTelegramBot_bot:
+echo "
+# 			@NameTelegramBot_bot:
 TOKEN       = 'TOKEN'
 
 ADMINS_ID   = [0, 0]
