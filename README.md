@@ -104,7 +104,13 @@ if chmod 777 /var/run/docker.sock; then
 else
     echo "[X][FAILED TO GRANT PERMISSIONS]"
 fi
-
+    
+# Запуск контейнера из образа DOCKER_IMAGE_BOT_NAME
+# if docker run -d bot_image; then
+#    echo "[+][BOT RUN]"
+# else
+#    echo "[X][FAILED TO RUN BOT]"
+# fi
   </pre>  
 
 Finished bot implementation -> <a href="https://t.me/TestTelegramBot001_bot">YT_downloader</a>
