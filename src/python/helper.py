@@ -119,17 +119,24 @@ async def send_video(message, bot, file_id=''):
             height=height,
             duration=duration,
             thumbnail=thumbnail) 
-        print("[+][DONE SENDING]", datetime.datetime.now())
-        try:
-            if del_file:
-                os.remove(f'{curren_path}video/{str_buf_fix(file_name)}.mp4')
-                print('[+][VIDEO FILE DELETED]')
-        except Exception as e:
-            print('[ERR OF DEL]')
+        print("[+][DONE SENDING AS VIDEO]", datetime.datetime.now())
     except Exception as e:
-        await bot.send_message(message.chat.id, "ERROR SENDING")
-        await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(")
-        print("[-][ERROR SENDING]", e)
+        print("[X][ERROR SENDING AS VIDEO FILE]", e)
+        try:
+            video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
+            video = FSInputFile(video_file)
+            await bot.send_document(chat_id=message.chat.id, document=video)
+            print("[+][DONE SENDING AS DOCUMENT]", datetime.datetime.now())
+        except Exception as e:
+            pass
+            await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(")
+            print("[X][ERROR SENDING AS DOCUMENT]", e)
+    try:
+        if del_file:
+            os.remove(f'{curren_path}video/{str_buf_fix(file_name)}.mp4')
+            print('[+][VIDEO FILE DELETED]')
+    except Exception as e:
+        print('[X][ERR OF DEL]')
 
 async def send_audio(message, bot, file_id, group=''):
     send_audio_status = 0
@@ -139,10 +146,10 @@ async def send_audio(message, bot, file_id, group=''):
     with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
-        try:   
+        try:
             duration += json_info['duration']
         except Exception as e:
-            print('[-][DURATION GETING ERROR]')    
+            print('[-][DURATION GETING ERROR]')
     print('[+][START SENDING]')
     try:
         audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
@@ -150,7 +157,7 @@ async def send_audio(message, bot, file_id, group=''):
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
         except Exception as e:
-            print('[-][TRHUMBNAIL AUDIO MESSAGE ERROR]')    
+            print('[-][TRHUMBNAIL AUDIO MESSAGE ERROR]')
         try:
             await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail, duration=duration)
         except Exception as e:
@@ -183,8 +190,7 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[-][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, "ERROR SENDING")
-        await bot.send_message(message.chat.id, "WE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
+        await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
         print("[-][ERROR SENDING]", e)
     return send_audio_status
 
@@ -195,7 +201,6 @@ async def download_media(URL, is_video=False):
     file_id = ''
     done = 0
     while done < 15: # kostyl for facebook reels
-        print('[TRY NUMBER ]', done)
         try:
             with yt_dlp.YoutubeDL() as ydl:
                 some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
@@ -205,24 +210,22 @@ async def download_media(URL, is_video=False):
                 if await save_json(file_id, some_var):
                     done = 15
         except Exception as e:
-                print("[CAN'T GET JSON FROM LINK]", e)  
-        if 'facebook' in URL:    # kostyl for facebook reels
-            done += 1 
-        else:   
-            done = 15                     
+                print("[CAN'T GET JSON FROM LINK]", e)
+        done += 1
     if is_video:
         done = 0
-        while done < 15: # kostyl for facebook reels
+        while done < 15: # kostyl for facebook reels and tiktok
             print("[+][DOWNLOADING VIDEO]")
             try:
                 quality = 'b' # best
-                if SITE_1 in URL:
+                if 'tiktok' in URL:
+                    quality = '0'
+                elif SITE_1 in URL:
                     quality = 'w' # worst
                 cmd = str(f'yt-dlp -f {quality} '+
-                        # f'-S "filesize:50M" '+ #max file size around 50 Mb
                         f'--max-filesize 50M '+ # KOSTYL for tg
                         f'-P "{curren_path}video" '+
-                        f'-o "{str_buf_fix(file_id)}.mp4" '+ 
+                        f'-o "{str_buf_fix(file_id)}.mp4" '+
                         f'"{URL}"')
                 process = await asyncio.create_subprocess_shell(
                     cmd,
@@ -238,7 +241,6 @@ async def download_media(URL, is_video=False):
                     done = 15
                 try:
                     l = some_var['thumbnails'][10]['url']               # l is link to image of this sound
-                    print('[_][DOWNLOADING VIDEO THUMBNAIL]')
                     # DOWNLOAD AND SAVE IMAGE
                     resource = urllib.request.urlopen(l)
                     with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
@@ -259,16 +261,13 @@ async def download_media(URL, is_video=False):
                     print(error_message)
             except Exception as e:
                 print("[-][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
-            if 'facebook' in URL:    # kostyl for facebook reels
-                done += 1
-            else:
-                done = 15
+            done += 1
     else:
-        l = some_var['thumbnails'][5]['url']               # l is link to image of this sound
+        link_thumbnail = some_var['thumbnails'][5]['url'] # link_thumbnail is link to image of this sound
         print("[+][DOWNLOADING AUDIO]")
         try:
             # DOWNLOAD AND SAVE IMAGE
-            resource = urllib.request.urlopen(l)
+            resource = urllib.request.urlopen(link_thumbnail)
             with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                 file.write(resource.read())
             print("[+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]")    
@@ -277,7 +276,7 @@ async def download_media(URL, is_video=False):
         try:
             cmd = str(f'yt-dlp -f ba '+
                       f'-o "{str_buf_fix(file_name)}" '+
-                      f'--max-filesize 50.0M '+ # KOSTYL
+                      f'--max-filesize 50.0M '+ # KOSTYL tg size 
                       f'-x --audio-quality 0 '+
                       f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
                       f'-P {curren_path}media_from_yt '+ # path
