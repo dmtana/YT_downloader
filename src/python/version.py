@@ -1,10 +1,14 @@
-VERSION = '2024.04.08'
+VERSION = '2024.04.11'
 description = '''<i>
-- preparation for psql integration
-- changing the location of the bot configuration file
-- minor changes to the dockerfile creation script
-- increase in attempts to download videos from Facebook from 10 to 15 (var done == 15)
+- video downloading improvement
 </i>'''
+# VERSION = '2024.04.08'
+# description = '''<i>
+# - preparation for psql integration
+# - changing the location of the bot configuration file
+# - minor changes to the dockerfile creation script
+# - increase in attempts to download videos from Facebook from 10 to 15 (var done == 15)
+# </i>'''
 
 # VERSION = '2024.04.03'
 # description = '''
