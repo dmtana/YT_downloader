@@ -84,7 +84,10 @@ async def text_handler(message: Message, bot: Bot):
     args = helper.get_args(message.text)
     print(message.text)
     try:
-        if "https://" in args['link']:
+        if 'https://' and 'youtube' and '&list=' in args['link']:
+            await bot.send_message(message.chat.id, "Бот не может качать весь плейлист, введите ссылку на отдедельную песню в формате 'https://...'\n\n"+
+                                   "The bot cannot download the entire playlist, enter a link to an individual song in the format 'https://...")
+        elif "https://" in args['link']:
             # variable [message_info] need for delete message after sending file
             try:
                 key = generate_random_key()
@@ -200,7 +203,8 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
         for rem_ms in ms:
             await bot.pin_chat_message(chat_id=rem_ms.chat.id, message_id=rem_ms.message_id)
             ms.remove(rem_ms)   
-        await message.reply(f"Я отправил твой отзыв автору бота.")    
+        await message.reply(f"Я отправил твой отзыв автору бота.\n"+
+                            "I sent your feedback to the bot author.")    
     except Exception as e:  
         await message.reply('ERROR FEEDBACK, CAN\'T PIN MESSAGE')      
     await state.clear()
