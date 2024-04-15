@@ -34,7 +34,7 @@ async def create_folders():
         os.makedirs(curren_path+'photo/Thumbnails') 
     if not os.path.exists(curren_path+'JSON_INFO_MP3'):
         os.makedirs(curren_path+'JSON_INFO_MP3') 
-    print('[+][Folder created!]')    
+    print('[bot][+][Folder created!]')    
     
 async def save_json(a, j): #this method save json info
     folder = curren_path+'JSON_INFO_MP3'
@@ -44,10 +44,10 @@ async def save_json(a, j): #this method save json info
         with open(f"{curren_path}JSON_INFO_MP3/{a}.json", "w") as json_file:
             # SAVE JSON FILE TO HAVE INFO ABOUT SOUND
             json_file.write(json.dumps(j))
-            print('[+][JSON SAVE]')
+            print('[bot][+][JSON SAVE]')
             return True
     except Exception as e:
-        print("[-][ERROR JSON SAVE]", e)
+        print("[bot][-][ERROR JSON SAVE]", e)
 
 # commands for download video
 # @deprecated(reason="added video choice") 
@@ -78,7 +78,7 @@ def get_args(m : str):
     # @deprecated(reason="added group choice")         
     if len(list_str) > 2:
         commands['group'] = list_str[2]
-    print('[+][ARG]')    
+    print('[bot][+][ARG]')    
     return commands
 
 async def send_video(message, bot, file_id=''):
@@ -93,21 +93,21 @@ async def send_video(message, bot, file_id=''):
         try:
             width = int(json_info['width'])
             height = int(json_info['height'])
-            print('[+][RES]', end='')
+            print('[bot][+][RES]', end='')
         except Exception as e:
-            print('[-][ERROR WIDTH AND HEIGHT]')
+            print('[bot][-][ERROR WIDTH AND HEIGHT]')
         try:
             if width > height:
                 thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
-            print('[+][THUMB]', end='')    
+            print('[bot][+][THUMB]', end='')    
         except Exception as e:
-            print('[-][VIDEO THUMBNAIL ERROR]', e)
+            print('[bot][-][VIDEO THUMBNAIL ERROR]', e)
         try:
             duration = int(json_info['duration'])
-            print('[+][DUR]', end='')   
+            print('[bot][+][DUR]', end='')   
         except Exception as e:
-            print('[-][ERROR DURATION VIDEO INFO]')    
-    print('[+][START SENDING]')
+            print('[bot][-][ERROR DURATION VIDEO INFO]')    
+    print('[bot][+][START SENDING]')
     try:
         video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
         video = FSInputFile(video_file)
@@ -119,24 +119,24 @@ async def send_video(message, bot, file_id=''):
             height=height,
             duration=duration,
             thumbnail=thumbnail) 
-        print("[+][DONE SENDING AS VIDEO]", datetime.datetime.now())
+        print("[bot][+][DONE SENDING AS VIDEO]", datetime.datetime.now())
     except Exception as e:
-        print("[X][ERROR SENDING AS VIDEO FILE]", e)
+        print("[bot][X][ERROR SENDING AS VIDEO FILE]", e)
         try:
             video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
             video = FSInputFile(video_file)
             await bot.send_document(chat_id=message.chat.id, document=video)
-            print("[+][DONE SENDING AS DOCUMENT]", datetime.datetime.now())
+            print("[bot][+][DONE SENDING AS DOCUMENT]", datetime.datetime.now())
         except Exception as e:
             pass
             await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(")
-            print("[X][ERROR SENDING AS DOCUMENT]", e)
+            print("[bot][X][ERROR SENDING AS DOCUMENT]", e)
     try:
         if del_file:
             os.remove(f'{curren_path}video/{str_buf_fix(file_name)}.mp4')
-            print('[+][VIDEO FILE DELETED]')
+            print('[bot][+][VIDEO FILE DELETED]')
     except Exception as e:
-        print('[X][ERR OF DEL]')
+        print('[bot][X][ERR OF DEL]')
 
 async def send_audio(message, bot, file_id, group=''):
     send_audio_status = 0
@@ -149,36 +149,36 @@ async def send_audio(message, bot, file_id, group=''):
         try:
             duration += json_info['duration']
         except Exception as e:
-            print('[-][DURATION GETING ERROR]')
-    print('[+][START SENDING]')
+            print('[bot][-][DURATION GETING ERROR]')
+    print('[bot][+][START SENDING]')
     try:
         audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
         audio = FSInputFile(audio_file)
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
         except Exception as e:
-            print('[-][TRHUMBNAIL AUDIO MESSAGE ERROR]')
+            print('[bot][-][TRHUMBNAIL AUDIO MESSAGE ERROR]')
         try:
             await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail, duration=duration)
         except Exception as e:
-            print('[-][ERROR AUDIO SENDING]', e)
+            print('[bot][-][ERROR AUDIO SENDING]', e)
             try:
                 await bot.send_document(message.chat.id, audio)
             except Exception as e:
-                print("[-][ERROR SENDING AUDIO AS DOCUMENT]", e)
+                print("[bot][-][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
             # try:
             try:
                 await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
                 send_audio_status = 6
             except Exception as e:
-                print('[-][ERROR GROUP AUDIO SENDING]', e)
+                print('[bot][-][ERROR GROUP AUDIO SENDING]', e)
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
                 try:
                     await bot.send_document(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
                 except Exception as e:
-                    print('[-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
+                    print('[bot][-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
             # except Exception as e:
             #     await bot.send_message(chat_id=message.chat.id, text=str(e))
             #     print('[Ошибка отправки в группу!]', e)
@@ -186,12 +186,12 @@ async def send_audio(message, bot, file_id, group=''):
         try:
             if del_file:
                 os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
-                print('[+][FILE DELETED]')
+                print('[bot][+][FILE DELETED]')
         except Exception as e:
-            print('[-][ERR OF FILE DELETE]')
+            print('[bot][-][ERR OF FILE DELETE]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
-        print("[-][ERROR SENDING]", e)
+        print("[bot][-][ERROR SENDING]", e)
     return send_audio_status
 
 async def download_media(URL, is_video=False):
@@ -203,19 +203,21 @@ async def download_media(URL, is_video=False):
     while done < 15: # kostyl for facebook reels
         try:
             with yt_dlp.YoutubeDL() as ydl:
+                print('yt-dlp 1')
                 some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
                 # WE GET TITLE AND ID FROM LINK
                 file_name = some_var['title']
                 file_id = some_var['id']
                 if await save_json(file_id, some_var):
                     done = 15
+                print('yt-dlp 2')    
         except Exception as e:
-                print("[CAN'T GET JSON FROM LINK]", e)
+                print("[bot][CAN'T GET JSON FROM LINK]", e)
         done += 1
     if is_video:
         done = 0
         while done < 15: # kostyl for facebook reels and tiktok
-            print("[+][DOWNLOADING VIDEO]")
+            print("[bot][DOWNLOADING VIDEO]")
             try:
                 quality = 'b' # best
                 if 'tiktok' in URL:
@@ -235,8 +237,15 @@ async def download_media(URL, is_video=False):
                 stdout, stderr = await process.communicate()
 
                 print(cmd)
-                print("[+][DOWNLOAD VIDEO COMPLETE]")
-                print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
+                print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
+                print(f'[cmd][+][STDOUT]'+
+                      f'\n===============START===============\n'+
+                      f'{stdout.decode("utf-8")}'+
+                      f'\n===============END===============\n'+
+                      f'\n[cmd][!][ERRORS]'+
+                      f'\n===============START===============\n'+
+                      f'{stderr.decode("utf-8")}'+
+                      f'\n===============END===============\n')
                 if 'already been downloaded' in stdout.decode("utf-8"):
                     done = 15
                 try:
@@ -245,9 +254,9 @@ async def download_media(URL, is_video=False):
                     resource = urllib.request.urlopen(l)
                     with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                         file.write(resource.read())
-                    print("[+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
+                    print("[bot][+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
                 except Exception as e:
-                    print("[-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
+                    print("[bot][-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
                 if 'File is larger than max-filesize' in str(stdout):
                     error_message = str(f'<pre>File is larger than 50 Mb\n'+
                 'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -255,24 +264,24 @@ async def download_media(URL, is_video=False):
                 'Этот лимит может быть изменен в будущем.</pre>')
                     try:
                         os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
-                        print('[+][VIDEO PART-FILE DELETED]')
+                        print('[bot][+][VIDEO PART-FILE DELETED]')
                     except Exception as e:
-                        print('[ERROR PART FILE DELETING]', e)
+                        print('[bot][X][ERROR PART FILE DELETING]', e)
                     print(error_message)
             except Exception as e:
-                print("[-][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
+                print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
             done += 1
     else:
         link_thumbnail = some_var['thumbnails'][5]['url'] # link_thumbnail is link to image of this sound
-        print("[+][DOWNLOADING AUDIO]")
+        print("[bot][+][DOWNLOADING AUDIO]")
         try:
             # DOWNLOAD AND SAVE IMAGE
             resource = urllib.request.urlopen(link_thumbnail)
             with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                 file.write(resource.read())
-            print("[+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]")    
+            print("[bot][+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]")    
         except Exception as e:
-            print("[-][ERR DOWNLOAD IMAGE]", e)
+            print("[bot][-][ERR DOWNLOAD IMAGE]", e)
         try:
             cmd = str(f'yt-dlp -f ba '+
                       f'-o "{str_buf_fix(file_name)}" '+
@@ -288,8 +297,15 @@ async def download_media(URL, is_video=False):
                 stderr=subprocess.PIPE
             )
             stdout, stderr = await process.communicate()
-            print("[+][DOWNLOAD AUDIO COMPLETE]")
-            print(f'[+][STDOUT] - {stdout.decode("utf-8")}, \n[!][ERRORS] - {stderr.decode("utf-8")}')
+            print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
+            print(f'[cmd][+][STDOUT]'+
+                      f'\n===============START===============\n'+
+                      f'{stdout.decode("utf-8")}'+
+                      f'\n===============END===============\n'+
+                      f'\n[cmd][!][ERRORS]'+
+                      f'\n===============START===============\n'+
+                      f'{stderr.decode("utf-8")}'+
+                      f'\n===============END===============\n')
             if 'File is larger than max-filesize' in str(stdout):
                 error_message = str(f'<pre>File is larger than 50 Mb\n'+
                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -297,7 +313,7 @@ async def download_media(URL, is_video=False):
                'Этот лимит может быть изменен в будущем.</pre>')
                 print(error_message)
         except Exception as e:
-            print("[-][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
+            print("[bot][-][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
         await mp3_tag_editor.tag_edit(file_id)
     return file_id, error_message            
 
@@ -311,9 +327,9 @@ async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
             if os.path.isfile(file_path):
                 if os.stat(file_path).st_mtime < now - max_day * 86400:
                     os.remove(file_path)
-                    print(f'[DELETE FILE]: {file_path}')
+                    print(f'[bot][DELETE FILE]: {file_path}')
     except Exception as e:
-        print(f'[NO DIR: {folder_path}]')
+        print(f'[bot][NO DIR: {folder_path}]')
 
 async def show_cat(message: Message, bot: Bot):
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
@@ -322,5 +338,5 @@ async def show_cat(message: Message, bot: Bot):
             image = FSInputFile(cat_image_path)
             await bot.send_photo(message.chat.id, image)
         except Exception as e:
-            print('[CAT IMAGE ERROR]')
+            print('[bot][CAT IMAGE ERROR]')
             await bot.send_message(message.chat.id, "нима котика")

@@ -2,7 +2,7 @@ from config.config import ADMINS_ID, MODERATORS_ID
 from config.config import START_TEXT
 from config.config import GROUP1, GROUP2, GROUP3
 
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.chat_action import ChatActionSender
@@ -15,8 +15,11 @@ from side_menu import set_commands
 
 from version import VERSION, description
 
+from database.database import write_to_db
+
 import helper
 import keyboards
+import datetime
 
 my_cache = TemporaryCache()
 
@@ -52,15 +55,18 @@ Side menu command handlers
 '''
 # START COMMAND HANDLER
 async def get_start(message: Message, bot: Bot):
-    await message.answer(f'Здравствуй <b>{message.from_user.full_name}</b>. {START_TEXT["RUS"]}')
+    await message.answer(f'Hello there, <b>{message.from_user.full_name}</b>. {START_TEXT["RUS"]}')
 
 # HELP COMMAND HANDLER
 async def get_help(message: Message, bot: Bot):
-    await message.answer('Помощи пока нет, но вы держитесь =)')
+    await message.answer('Помощи пока нет, но вы держитесь =)\n'+
+                         'We working on it =)')
     
 # FEEDBACK COMMAND HANDLER
 async def get_feedback(message: Message, state: FSMContext):
-    await message.answer('Напиши отзыв автору: ')
+    await message.answer('Напиши отзыв автору: \n<i>(если хотите получить обратную связь укажите как с вами связаться)</i>\n'+
+                         'Write a feedback to the author: \n<i>(if you want to receive feedback, please indicate how to contact you)</i>\n'+
+                         'or write me <b>@dmtana</b>')
     await state.set_state(FeedbackForm.RECEIVING_FEEDBACK)
     print('состояние установлено')
 
@@ -83,7 +89,7 @@ async def text_handler(message: Message, bot: Bot):
             try:
                 key = generate_random_key()
                 key = key[0:38] # short coz callback_data is ***** -_-
-                message_info = await message.reply("СКАЧАТЬ ->", 
+                message_info = await message.reply("<b>DOWNLOAD</b>", 
                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
                 
                 await my_cache.add_to_cache(key, [message_info, args])
@@ -95,7 +101,8 @@ async def text_handler(message: Message, bot: Bot):
             await helper.show_cat(message, bot)
             print("мяу", end=" ")
         else:
-            await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'")
+            await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'\n"+
+                                   "Please enter the link in the format 'https://...")
             print(message.chat.type)
             print("[-][ERROR INPUT]")
     except Exception as e:
@@ -105,7 +112,7 @@ async def text_handler(message: Message, bot: Bot):
             print('ERROR DELETING MESSAGE', e)
             await bot.send_message(message.chat.id, "ERROR INPUT, CALL TO ADMIN")    
         await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
-        print("[-][ERROR IN MAIN PACKAGE]", e)
+        print("[bot][-][ERROR IN MAIN PACKAGE]", e)
 
 
 # DOWNLOAD AND SEND VIDEO
@@ -134,6 +141,13 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     message = arr[0]
     args = arr[1]
     ms = None
+    ############################### testing
+    # try:
+    #     print('writing to db', 'test data', str(datetime.datetime.now()))
+    #     await write_to_db('test data', str(datetime.datetime.now()))
+    # except Exception as e:
+    #     print('ERR DATABASE WRITE')
+    ############################### testing
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
         try:    
@@ -146,7 +160,7 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
             await call.message.answer('ERROR INPUT, WRONG LINK')
             print('ERROR AUDIO - ', e)
         finally:
-            print('[+][DONE DOWNLOADING]')
+            print('[bot][+][DONE DOWNLOADING]')
             if ms:
                 await bot.delete_message(message.chat.id, ms.message_id) 
     return download_and_send_audio_status            
@@ -163,7 +177,7 @@ async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: Sele
 
     send_status = await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group)
     if send_status > 5:
-        await call.message.answer(f'<b>In the group {group} +</b>')
+        await call.message.answer(f'<b>Sent in {group} +</b>')
 
 async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
     # FEEDBACK TO ADMINS
