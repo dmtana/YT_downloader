@@ -25,7 +25,7 @@ Get a bot token from a botfather. And start the bot.
 <code>wget "https://raw.githubusercontent.com/dmtana/YT_downloader/master/src/python/creation/creation.sh"</code>
 </pre>  
 
-3. And finally run the installation file with superuser <caode>sudo</code> rights and follow the instructions
+3. And finally run the installation file with superuser <code>sudo</code> rights and follow the instructions
 <pre>
 <code>sudo bash screation.sh</code>
 </pre>
