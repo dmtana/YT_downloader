@@ -22,7 +22,7 @@ Get a bot token from a botfather. And start the bot.
     
 2. Then go to the folder you created <code>cd bot_folder</code> and copy the installation file from the repository
 <pre>
-<code>wget "https://raw.githubusercontent.com/dmtana/YT_downloader/master/src/python/creation/screation.sh"</code>
+<code>wget "https://raw.githubusercontent.com/dmtana/YT_downloader/master/src/python/creation/creation.sh"</code>
 </pre>  
 
 3. And finally run the installation file with superuser <caode>sudo</code> rights and follow the instructions
