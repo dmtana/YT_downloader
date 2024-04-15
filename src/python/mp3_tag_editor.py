@@ -42,13 +42,13 @@ async def tag_edit(id):
                 with open(f"{curren_path}photo/Thumbnails/{id}.jpeg", "rb") as album_art:
                     audiofile.add(APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=album_art.read()))
             except Exception as e:
-                print("[BAD ATTRIBUTES]", e)
+                print("[tag_editor][BAD ATTRIBUTES]", e)
                 try:
                     audiofile.add(TIT2(encoding=3, text=str_buf_fix(title)))
                 except Exception as e:
-                    print("[BAD ATTRIBUTES: 2]", e)
+                    print("[tag_editor][BAD ATTRIBUTES: 2]", e)
             # SAVE TAG
             audiofile.save()
 
     except Exception as e:
-        print('[NO MP3 TAG]', e)
+        print('[tag_editor][NO MP3 TAG]', e)
