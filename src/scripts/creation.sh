@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # manual mod
-# touch script.sh
+# touch creator.sh
 
 # runnable 
-# chmod +x script.sh
+# chmod +x creator.sh
 
 # docker
 # sudo apt install docker.io
 
 # run
-# ./script.sh
+# ./creator.sh
 
 echo "Enter bot TOKEN:"
 read TOKEN
@@ -85,6 +85,12 @@ if chmod 777 /var/run/docker.sock; then
 else
     echo "[X][FAILED TO GRANT PERMISSIONS]"
 fi
+
+if rm -r requirements.txt script.sh Dockerfile; then
+    echo "[+][rm -r requirements.txt script.sh Dockerfile]"
+else
+    echo "[X][FAILED rm -r requirements.txt script.sh Dockerfile]"
+fi    
 
 if [[ "$answer" == "yes" || "$answer" == "y" ]]; then
     if docker run -d bot_image; then

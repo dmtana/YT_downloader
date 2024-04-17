@@ -9,10 +9,10 @@ from config.config import TOKEN
 
 # подготовка к запуску бота
 async def start():
-    # Logging to console 
+    # Logging to console
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s) .%(funcName)s(%(lineno)d) - %(message)s")
 
-    # get token and set html parsing  
+    # get token and set html parsing
     bot = Bot(token=TOKEN, parse_mode='HTML')
 
     dp = Dispatcher()
@@ -27,12 +27,11 @@ async def start():
         await helper.delete_file(1, 'photo/Thumbnails')
         await helper.delete_file(1, 'video')
     except Exception as e:
-        print(f'[ERROR CLEANING CACHE] - {str(e)}')    
+        print(f'[ERROR CLEANING CACHE] - {str(e)}')
 
-    # BOT STARTED 
+    # BOT STARTED
     try:
         await dp.start_polling(bot)
-        print('[BOT STARTED]')
     except Exception as ex:
         print(f'[ERROR IN START FILE] {ex}')
     finally:

@@ -64,8 +64,8 @@ async def get_help(message: Message, bot: Bot):
     
 # FEEDBACK COMMAND HANDLER
 async def get_feedback(message: Message, state: FSMContext):
-    await message.answer('Напиши отзыв автору: \n<i>(если хотите получить обратную связь укажите как с вами связаться)</i>\n'+
-                         'Write a feedback to the author: \n<i>(if you want to receive feedback, please indicate how to contact you)</i>\n'+
+    await message.answer('Напиши отзыв автору: \n<i>(если хотите получить обратную связь укажите как с вами связаться)</i>\n\n'+
+                         'Write a feedback to the author: \n<i>(if you want to receive feedback, please indicate how to contact you)</i>\n\n'+
                          'or write me <b>@dmtana</b>')
     await state.set_state(FeedbackForm.RECEIVING_FEEDBACK)
     print('состояние установлено')
