@@ -176,7 +176,7 @@ async def send_audio(message, bot, file_id, group=''):
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
                 try:
-                    await bot.send_document(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail)
+                    await bot.send_document(chat_id=f'@{group}', document=audio, thumbnail=thumbnail)
                 except Exception as e:
                     print('[bot][-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
             # except Exception as e:
