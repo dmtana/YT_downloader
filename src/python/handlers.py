@@ -132,7 +132,7 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     user_name = arr[2]
     ############################### testing
     try:
-        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='video', user_name=user_name)
+        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='video', user_name=user_name, bot_name=message.from_user.full_name)
     except Exception as e:
         print('[X][ERROR DATABASE WRITE]', e)
     ############################### testing
@@ -161,7 +161,7 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     ms = None
     ############################### testing
     try:
-        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='audio', user_name=user_name)
+        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='audio', user_name=user_name, bot_name=message.from_user.full_name)
     except Exception as e:
         print('[X][ERROR DATABASE WRITE]', e)
     ############################### testing

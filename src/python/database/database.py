@@ -14,7 +14,8 @@ async def start_db():
                     information text,
                     media_type text,
                     user_id text,
-                    user_name text)
+                    user_name text,
+                    bot_name text)
             ''')
     except Exception as e:
         print('[problems]', e)    
@@ -26,13 +27,13 @@ async def start_db():
         except Exception as e:
             print('[almost]')
 
-async def write_to_db(information='', id='', media_type='', user_name='', table_name='received'):
+async def write_to_db(information='', id='', media_type='', user_name='', bot_name='', table_name='received'):
     try:
         dsn = f"postgresql://{DATABASE['user']}:{DATABASE['pass']}@{DATABASE['host']}:{DATABASE['port']}/{DATABASE['database']}"
         conn = await asyncpg.connect(dsn)
         await conn.execute(f'''
-                INSERT INTO {table_name}(date_and_time, information, media_type, user_id, user_name) VALUES($1, $2, $3, $4, $5)
-                ''', datetime.now(), information, media_type, id, user_name)
+                INSERT INTO {table_name}(date_and_time, information, media_type, user_id, user_name, bot_name) VALUES($1, $2, $3, $4, $5, $6)
+                ''', datetime.now(), information, media_type, id, user_name, bot_name)
     except Exception as e:
         print('[ZALUPA]', e)    
     finally:
