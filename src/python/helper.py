@@ -8,6 +8,8 @@ import json
 import random
 import datetime
 import time
+import cv2
+import random
 
 from aiogram import Bot
 from aiogram.types import Message, FSInputFile
@@ -97,8 +99,7 @@ async def send_video(message, bot, file_id=''):
         except Exception as e:
             print('[bot][-][ERROR WIDTH AND HEIGHT]')
         try:
-            if width > height:
-                thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
+            thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
             print('[bot][+][THUMB]', end='')    
         except Exception as e:
             print('[bot][-][VIDEO THUMBNAIL ERROR]', e)
@@ -167,7 +168,6 @@ async def send_audio(message, bot, file_id, group=''):
             except Exception as e:
                 print("[bot][-][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
-            # try:
             try:
                 await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
                 send_audio_status = 6
@@ -179,10 +179,6 @@ async def send_audio(message, bot, file_id, group=''):
                     await bot.send_document(chat_id=f'@{group}', document=audio, thumbnail=thumbnail)
                 except Exception as e:
                     print('[bot][-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
-            # except Exception as e:
-            #     await bot.send_message(chat_id=message.chat.id, text=str(e))
-            #     print('[Ошибка отправки в группу!]', e)
-                    
         try:
             if del_file:
                 os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
@@ -195,12 +191,12 @@ async def send_audio(message, bot, file_id, group=''):
     return send_audio_status
 
 async def download_media(URL, is_video=False):
-    some_var = ''
+    some_var = '' # JSON info from yt-dlp lib
     error_message = ''    
     file_name = ''
     file_id = ''
     done = 0
-    while done < 15: # kostyl for facebook reels
+    while done < 15: # kostyl for facebook reels etc
         try:
             with yt_dlp.YoutubeDL() as ydl:
                 print('yt-dlp 1')
@@ -235,25 +231,24 @@ async def download_media(URL, is_video=False):
                     stderr=subprocess.PIPE
                 )
                 stdout, stderr = await process.communicate()
-
                 print(cmd)
                 print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
-                print(f'[cmd][+][STDOUT]'+
-                      f'\n===============START===============\n'+
-                      f'{stdout.decode("utf-8")}'+
-                      f'\n===============END===============\n'+
-                      f'\n[cmd][!][ERRORS]'+
-                      f'\n===============START===============\n'+
-                      f'{stderr.decode("utf-8")}'+
-                      f'\n===============END===============\n')
+                print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                      f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
                 if 'already been downloaded' in stdout.decode("utf-8"):
                     done = 15
                 try:
-                    l = some_var['thumbnails'][10]['url']               # l is link to image of this sound
-                    # DOWNLOAD AND SAVE IMAGE
-                    resource = urllib.request.urlopen(l)
-                    with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
-                        file.write(resource.read())
+                    video_path = f'{curren_path}video/{str_buf_fix(file_id)}.mp4'
+                    cap = cv2.VideoCapture(video_path)
+                    if not cap.isOpened():
+                        print("err open file")
+                    frame_number = random.randint(0, 45)
+                    for i in range(frame_number + 1):
+                        ret, frame = cap.read()
+                        if not ret:
+                            print(f"err reading frame {i+1}")
+                    cap.release()
+                    cv2.imwrite(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', frame)
                     print("[bot][+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
                 except Exception as e:
                     print("[bot][-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
@@ -298,14 +293,8 @@ async def download_media(URL, is_video=False):
             )
             stdout, stderr = await process.communicate()
             print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
-            print(f'[cmd][+][STDOUT]'+
-                      f'\n===============START===============\n'+
-                      f'{stdout.decode("utf-8")}'+
-                      f'\n===============END===============\n'+
-                      f'\n[cmd][!][ERRORS]'+
-                      f'\n===============START===============\n'+
-                      f'{stderr.decode("utf-8")}'+
-                      f'\n===============END===============\n')
+            print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                  f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
             if 'File is larger than max-filesize' in str(stdout):
                 error_message = str(f'<pre>File is larger than 50 Mb\n'+
                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
