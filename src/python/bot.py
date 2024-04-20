@@ -4,6 +4,7 @@ import handlers
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.bot import DefaultBotProperties
 
 from config.config import TOKEN
 
@@ -13,7 +14,7 @@ async def start():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s) .%(funcName)s(%(lineno)d) - %(message)s")
 
     # get token and set html parsing
-    bot = Bot(token=TOKEN, parse_mode='HTML')
+    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 
     dp = Dispatcher()
 
