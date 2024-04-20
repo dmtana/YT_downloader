@@ -2,23 +2,20 @@
 
 TOKENS=()
 # DATABASE CONFIG
-host='localhost'
+host='postgres'
 user='admin'
 passwd='postgres'
 db='bot_data'
 port='5432'
+
+user_pg_admin=admin@admin.com
+passwd_pg_admin=admin
 
 read -p "Enter TOKEN: " TOKEN
 IFS=',' read -ra TOKENS <<< "$TOKEN"
 
 echo "Run bot after install? Y/n"
 read answer
-
-if [[ "$answer" == "yes" || "$answer" == "y" || "$answer" == "Y" ]]; then
-    echo "Ok, the bot will be launched automatically"
-else
-    echo "Ok, run the bot in manual mode after installation"    
-fi
 
 num_of_bots=${#TOKENS[@]}
 
@@ -58,6 +55,7 @@ cat <<EOL >> docker-compose.yml
       - POSTGRES_USER=$user
       - POSTGRES_PASSWORD=$passwd
       - POSTGRES_DB=$db
+      - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
       - "$port:5432" # в контейнере будет всегда 5432 он залочен
     volumes:
@@ -69,8 +67,8 @@ cat <<EOL >> docker-compose.yml
   pg-admin:
     image: dpage/pgadmin4
     environment:
-      - PGADMIN_DEFAULT_EMAIL=$user
-      - PGADMIN_DEFAULT_PASSWORD=$passwd
+      - PGADMIN_DEFAULT_EMAIL=$user_pg_admin
+      - PGADMIN_DEFAULT_PASSWORD=$passwd_pg_admin
       - PGADMIN_LISTEN_PORT=80
     ports:
       - "2345:80"
@@ -165,6 +163,7 @@ DATABASE = {'pass':'$passwd', 'user':'$user', 'host':'$host', 'port':'$port', 'd
 done
 
 for ((i=0; i<num_of_bots; i++)); do
+    mkdir config_$i
     mv bot_$i/config.py config_$i/config.py
 done
 
