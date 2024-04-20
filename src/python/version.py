@@ -1,9 +1,16 @@
-VERSION = '2024.04.15'
+VERSION = '2024.04.20'
 description = '''<i>
-- edit language
-- edit feedback
-- minor improvements
+- add database
+- edit video thumbnails
+- edit creator script
 </i>'''
+
+# VERSION = '2024.04.15'
+# description = '''<i>
+# - edit language
+# - edit feedback
+# - minor improvements
+# </i>'''
 
 # VERSION = '2024.04.11'
 # description = '''<i>

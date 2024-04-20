@@ -15,11 +15,10 @@ from side_menu import set_commands
 
 from version import VERSION, description
 
-from database.database import write_to_db
+from database.database import write_to_db, start_db
 
 import helper
 import keyboards
-import datetime
 
 my_cache = TemporaryCache()
 
@@ -30,6 +29,7 @@ async def handlers_reg(dp: Dispatcher):
     dp.message.register(get_start, Command(commands=['start']))
     dp.message.register(get_help, Command(commands=['help']))
     dp.message.register(get_feedback, Command(commands=['feedback']))
+    dp.message.register(set_language, Command(commands=['languge']))
     dp.message.register(get_version, Command(commands=['version']))
 
     # FEEDBACK 
@@ -41,6 +41,8 @@ async def handlers_reg(dp: Dispatcher):
     # SELECTORS MEDIA DOWNLOADER
     dp.callback_query.register(download_and_send_audio, SelecMediaDownloader.filter(F.media_type == 'audio'))
     dp.callback_query.register(download_and_send_video, SelecMediaDownloader.filter(F.media_type == 'video'))
+
+    # ADDITIONAL MEDIA HANDLER
     dp.callback_query.register(send_audio_to_group, SelecMediaDownloader.filter(F.media_type == 'music'))
     dp.callback_query.register(send_audio_to_group, SelecMediaDownloader.filter(F.media_type == 'relax'))
     dp.callback_query.register(send_audio_to_group, SelecMediaDownloader.filter(F.media_type == 'rock'))
@@ -55,7 +57,7 @@ Side menu command handlers
 '''
 # START COMMAND HANDLER
 async def get_start(message: Message, bot: Bot):
-    await message.answer(f'Hello there, <b>{message.from_user.full_name}</b>. {START_TEXT["RUS"]}')
+    await message.answer(f'Hello there, <b>{message.from_user.full_name}</b>. {START_TEXT["EN"]}')
 
 # HELP COMMAND HANDLER
 async def get_help(message: Message, bot: Bot):
@@ -69,6 +71,10 @@ async def get_feedback(message: Message, state: FSMContext):
                          'or write me <b>@dmtana</b>')
     await state.set_state(FeedbackForm.RECEIVING_FEEDBACK)
     print('состояние установлено')
+
+# VERSION COMMAND HANDLER
+async def set_language(message: Message, bot: Bot):
+    await message.answer(f'Languages is coming soon\nWe working on it')
 
 # VERSION COMMAND HANDLER
 async def get_version(message: Message, bot: Bot):
@@ -91,11 +97,11 @@ async def text_handler(message: Message, bot: Bot):
             # variable [message_info] need for delete message after sending file
             try:
                 key = generate_random_key()
-                key = key[0:38] # short coz callback_data is ***** -_-
+                key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
                 message_info = await message.reply("<b>DOWNLOAD</b>", 
                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
                 
-                await my_cache.add_to_cache(key, [message_info, args])
+                await my_cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
 
             except Exception as e: 
                 print(f"ERROR in text_handler - {str(e)}")
@@ -123,6 +129,14 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     arr = await my_cache.get_from_cache(callback_data.key)
     message = arr[0]
     args = arr[1]
+    user_name = arr[2]
+    ############################### testing
+    try:
+        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='video', user_name=user_name)
+    except Exception as e:
+        print('[X][ERROR DATABASE WRITE]', e)
+    ############################### testing
+
     await bot.delete_message(message.chat.id, message.message_id)        
     async with ChatActionSender.upload_video(chat_id=call.message.chat.id, bot=bot):
         try:
@@ -143,13 +157,13 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     arr = await my_cache.get_from_cache(callback_data.key)
     message = arr[0]
     args = arr[1]
+    user_name = arr[2]
     ms = None
     ############################### testing
-    # try:
-    #     print('writing to db', 'test data', str(datetime.datetime.now()))
-    #     await write_to_db('test data', str(datetime.datetime.now()))
-    # except Exception as e:
-    #     print('ERR DATABASE WRITE')
+    try:
+        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='audio', user_name=user_name)
+    except Exception as e:
+        print('[X][ERROR DATABASE WRITE]', e)
     ############################### testing
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
@@ -213,6 +227,10 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
 # FIRST ACTION AFTER LAUNCH BOT
 async def start_bot(bot: Bot):
     await set_commands(bot)
+    try:
+        await start_db()
+    except Exception as e:    
+        print('[err 8989898]', e)
     try:
         for admin_id in ADMINS_ID:
             await bot.send_message(admin_id, "<b>BOT STARTED</b>")

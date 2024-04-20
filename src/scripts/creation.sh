@@ -1,30 +1,101 @@
 #!/bin/bash
 
-# manual mod
-# touch creator.sh
+TOKENS=()
+# DATABASE CONFIG
+host='localhost'
+user='admin'
+passwd='postgres'
+db='bot_data'
+port='5432'
 
-# runnable 
-# chmod +x creator.sh
+read -p "Enter TOKEN: " TOKEN
+IFS=',' read -ra TOKENS <<< "$TOKEN"
 
-# docker
-# sudo apt install docker.io
-
-# run
-# ./creator.sh
-
-echo "Enter bot TOKEN:"
-read TOKEN
-
-echo "Run bot after install? (yes/no or y/n)"
+echo "Run bot after install? Y/n"
 read answer
 
-if [[ "$answer" == "yes" || "$answer" == "y" ]]; then
+if [[ "$answer" == "yes" || "$answer" == "y" || "$answer" == "Y" ]]; then
     echo "Ok, the bot will be launched automatically"
 else
     echo "Ok, run the bot in manual mode after installation"    
 fi
 
-echo "
+num_of_bots=${#TOKENS[@]}
+
+read -p "Use default database setting? Y/n: " yesno
+
+if [[ "$yesno" != "yes" && "$yesno" != "y" || "$yesno" == "Y" ]]; then
+    while true; do
+        read -p "Enter database user name: " _user
+        read -p "Enter database password: " _passwd
+        read -p "Enter database name: " _db
+
+        echo -e "Your database config: \n\tuser - $_user\n\tpass - $_passwd\n\tdatabase - $_db"
+        read -p "Is it correct? Y/n: " answ
+
+        if [[ "$answ" == "yes" || "$answ" == "y" || "$answ" == "Y" ]]; then
+            user=$_user
+            passwd=$_passwd
+            db=$_db
+            break
+        else
+            continue
+        fi
+    done
+fi
+
+# Create docker-compose file
+cat <<EOL > docker-compose.yml
+version: '3.9'
+services:
+EOL
+
+# Add database service
+cat <<EOL >> docker-compose.yml
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_USER=$user
+      - POSTGRES_PASSWORD=$passwd
+      - POSTGRES_DB=$db
+    ports:
+      - "$port:5432" # в контейнере будет всегда 5432 он залочен
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+EOL
+
+# Add pgadmin4 service
+cat <<EOL >> docker-compose.yml
+  pg-admin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=$user
+      - PGADMIN_DEFAULT_PASSWORD=$passwd
+      - PGADMIN_LISTEN_PORT=80
+    ports:
+      - "2345:80"
+EOL
+
+# Add bot images
+for ((x=0; x<num_of_bots; x++)); do
+    cat <<EOL >> docker-compose.yml
+  yt_downloader_$x:
+    image: bot_image_$x
+    volumes:
+      - ./config_$x:/app/YT_downloader/src/python/config
+EOL
+done
+
+# # trim()
+# Print tokens
+for ((i=0; i<num_of_bots; i++)); do
+    trimmed_TOKEN=$(echo ${TOKENS[$i]} | sed 's/^[   ]*//;s/[    ]*$//')
+
+    mkdir bot_$i
+
+    cd bot_$i
+
+    echo "
 FROM python:3.8
 WORKDIR /app
 COPY . /app
@@ -46,56 +117,61 @@ echo "yt-dlp
 aiofiles
 aiogram
 aiohttp
-ffmpeg-python" > requirements.txt
+asyncpg
+ffmpeg-python
+opencv-python" > requirements.txt
 
 echo "
 #YT_downloader
-TOKEN       = '$TOKEN'
+TOKEN       = '$trimmed_TOKEN'
 ADMINS_ID   = [0]
 MODERATORS_ID = [0]
-START_TEXT  = {'RUS':'I am a simple bot designed to download videos and audio from various popular sources, such as YouTube, Instagram, TikTok, and many others. Just send me the link of what you want to download, and I will try to fetch it for you.'}
+START_TEXT  = {'EN':'I am a simple bot designed to download videos and audio from various popular sources, such as YouTube, Instagram, TikTok, and many others. Just send me the link of what you want to download, and I will try to fetch it for you.'}
+INFO        = {}
 GROUP1      = ''
 GROUP2      = ''
 GROUP3      = ''
-GROUP4      = ''
-GROUP5      = ''
-GROUP6      = ''
 SITE_1      = 'site1'
-SITE_2      = ''
-SITE_3      = ''
-VAR_1       = None
-VAR_2       = None
-VAR_3       = None
+DATABASE = {'pass':'$passwd', 'user':'$user', 'host':'$host', 'port':'$port', 'database':'$db'}
 " > config.py
 
-DOCKER_IMAGE_BOT_NAME=bot_image
+    DOCKER_IMAGE_BOT_NAME=bot_image_$i
 
-if docker build -t $DOCKER_IMAGE_BOT_NAME .; then
-    echo "[+][BUILD COMPLETE image name=$DOCKER_IMAGE_BOT_NAME]"
-else
-    echo "[X][BUILD FAILED]"
-fi
-if usermod -aG docker $USER; then
-    echo "[+][PERMISSION usermod -aG docker $USER]"
-else
-    echo "[X][FAILED TO GRANT PERMISSIONS]"
-fi
-if chmod 777 /var/run/docker.sock; then
-    echo "[+][PERMISSION chmod 777 /var/run/docker.sock]"
-else
-    echo "[X][FAILED TO GRANT PERMISSIONS]"
-fi
-
-if rm -r requirements.txt script.sh Dockerfile; then
-    echo "[+][rm -r requirements.txt script.sh Dockerfile]"
-else
-    echo "[X][FAILED rm -r requirements.txt script.sh Dockerfile]"
-fi    
-
-if [[ "$answer" == "yes" || "$answer" == "y" ]]; then
-    if docker run -d bot_image; then
-        echo "[+][BOT RUN]"
+    if docker build -t $DOCKER_IMAGE_BOT_NAME .; then
+        echo "[+][BUILD COMPLETE image name=$DOCKER_IMAGE_BOT_NAME]"
     else
-        echo "[X][FAILED TO RUN BOT]"
+        echo "[X][BUILD FAILED]"
     fi
-fi
+    if usermod -aG docker $USER; then
+        echo "[+][PERMISSION usermod -aG docker $USER]"
+    else
+        echo "[X][FAILED TO GRANT PERMISSIONS]"
+    fi
+    if chmod 777 /var/run/docker.sock; then
+        echo "[+][PERMISSION chmod 777 /var/run/docker.sock]"
+    else
+        echo "[X][FAILED TO GRANT PERMISSIONS]"
+    fi
+
+    if rm -r requirements.txt script.sh Dockerfile; then
+        echo "[+][rm -r requirements.txt script.sh Dockerfile]"
+    else
+        echo "[X][FAILED rm -r requirements.txt script.sh]"
+    fi    
+
+    cd .. 
+
+    echo "Token $((i+1)): [${trimmed_TOKEN}] DONE"
+done
+
+for ((i=0; i<num_of_bots; i++)); do
+    mv bot_$i/config.py config_$i/config.py
+done
+
+if [[ "$answer" == "yes" || "$answer" == "y" || "$answer" == "Y" ]]; then
+    if docker-compose up -d; then
+        echo "[+][docker-compose up -d]"
+    else
+        echo "[X][FAILED docker-compose up]"
+    fi   
+fi 
