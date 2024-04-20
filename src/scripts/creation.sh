@@ -2,7 +2,7 @@
 
 TOKENS=()
 # DATABASE CONFIG
-host='postgres'
+host='database'
 user='admin'
 passwd='postgres'
 db='bot_data'
@@ -41,6 +41,17 @@ if [[ "$yesno" != "yes" && "$yesno" != "y" || "$yesno" == "Y" ]]; then
     done
 fi
 
+if apt install docker.io -y; then
+    echo "[+][sudo apt install docker.io -y]"
+else
+    echo "[X][FAILED apt install docker.io -y]"
+fi
+if apt install docker-compose -y; then
+    echo "[+][apt install docker-compose -y]"
+else
+    echo "[X][FAILED apt install docker-compose -y]"
+fi
+
 # Create docker-compose file
 cat <<EOL > docker-compose.yml
 version: '3.9'
@@ -55,7 +66,6 @@ cat <<EOL >> docker-compose.yml
       - POSTGRES_USER=$user
       - POSTGRES_PASSWORD=$passwd
       - POSTGRES_DB=$db
-      - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
       - "$port:5432" # в контейнере будет всегда 5432 он залочен
     volumes:
