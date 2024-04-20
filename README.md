@@ -30,4 +30,4 @@ Get a bot token from a botfather. And start the bot.
 <code>sudo bash screation.sh</code>
 </pre>
 
-Finished bot implementation -> <a href="https://t.me/TestTelegramBot001_bot">YT_downloader</a>
+Finished bot implementation -> <a href="https://t.me/yt_downloader_dmtana_bot">YT_downloader</a>
