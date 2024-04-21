@@ -103,7 +103,7 @@ async def send_video(message, bot, file_id=''):
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
             print('[bot][+][THUMB]', end='')
             try:
-                if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200:
+                if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200: # tg limit for thumbnail
                     await compress_image(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
                     thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
             except Exception as e:
@@ -328,7 +328,6 @@ async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
         print(f'[bot][NO DIR: {folder_path}]')
 
 async def compress_image(input_path, output_path, target_size_kb = 200):
-    # Открываем изображение
     try:
         with Image.open(input_path) as img:
             quality = 100
