@@ -11,6 +11,7 @@ import time
 import cv2
 import random
 
+from PIL import Image
 from aiogram import Bot
 from aiogram.types import Message, FSInputFile
 from aiogram.utils.chat_action import ChatActionSender
@@ -100,7 +101,13 @@ async def send_video(message, bot, file_id=''):
             print('[bot][-][ERROR WIDTH AND HEIGHT]')
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
-            print('[bot][+][THUMB]', end='')    
+            print('[bot][+][THUMB]', end='')
+            try:
+                if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200:
+                    await compress_image(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
+                    thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
+            except Exception as e:
+                print('[helper][X][ERROR CONVERTER ON SEND_VIDEO]', e)
         except Exception as e:
             print('[bot][-][VIDEO THUMBNAIL ERROR]', e)
         try:
@@ -319,6 +326,21 @@ async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
                     print(f'[bot][DELETE FILE]: {file_path}')
     except Exception as e:
         print(f'[bot][NO DIR: {folder_path}]')
+
+async def compress_image(input_path, output_path, target_size_kb = 200):
+    # Открываем изображение
+    try:
+        with Image.open(input_path) as img:
+            quality = 100
+            while True:
+                img.save(output_path, optimize=True, quality=quality)
+                if os.path.getsize(output_path) / 1024 <= target_size_kb:
+                    break
+                quality -= 5
+                if quality < 10:
+                    break
+    except Exception as e:
+        print('[helper][X][CONVERT ERROR]', e)                     
 
 async def show_cat(message: Message, bot: Bot):
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
