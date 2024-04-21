@@ -1,6 +1,7 @@
 #!/bin/bash
 
 TOKENS=()
+
 # DATABASE CONFIG
 host='database'
 user='admin'
@@ -8,8 +9,9 @@ passwd='postgres'
 db='bot_data'
 port='5432'
 
-user_pg_admin=admin@admin.com
-passwd_pg_admin=admin
+# PGADMIN CONFIG
+user_pg_admin='admin@admin.com'
+passwd_pg_admin='admin'
 
 read -p "Enter TOKEN: " TOKEN
 IFS=',' read -ra TOKENS <<< "$TOKEN"
@@ -27,7 +29,10 @@ if [[ "$yesno" != "yes" && "$yesno" != "y" || "$yesno" == "Y" ]]; then
         read -p "Enter database password: " _passwd
         read -p "Enter database name: " _db
 
-        echo -e "Your database config: \n\tuser - $_user\n\tpass - $_passwd\n\tdatabase - $_db"
+        read -p "Enter database pgadmin login mail: " user_pg_admin
+        read -p "Enter database pgadmin password: " passwd_pg_admin
+
+        echo -e "Your database config: \n\tuser - $_user\n\tpass - $_passwd\n\tdatabase - $_db\n\n\tpgadmin login - $user_pg_admin\n\tpgadmin pass - $passwd_pg_admin"
         read -p "Is it correct? Y/n: " answ
 
         if [[ "$answ" == "yes" || "$answ" == "y" || "$answ" == "Y" ]]; then
@@ -126,6 +131,7 @@ aiofiles
 aiogram
 aiohttp
 asyncpg
+Pillow
 ffmpeg-python
 opencv-python" > requirements.txt
 
@@ -159,13 +165,7 @@ DATABASE = {'pass':'$passwd', 'user':'$user', 'host':'$host', 'port':'$port', 'd
         echo "[+][PERMISSION chmod 777 /var/run/docker.sock]"
     else
         echo "[X][FAILED TO GRANT PERMISSIONS]"
-    fi
-
-    if rm -r requirements.txt script.sh Dockerfile; then
-        echo "[+][rm -r requirements.txt script.sh Dockerfile]"
-    else
-        echo "[X][FAILED rm -r requirements.txt script.sh]"
-    fi    
+    fi 
 
     cd .. 
 
@@ -174,7 +174,7 @@ done
 
 for ((i=0; i<num_of_bots; i++)); do
     mkdir config_$i
-    mv bot_$i/config.py config_$i/config.py
+    cp bot_$i/config.py config_$i/config.py
 done
 
 if [[ "$answer" == "yes" || "$answer" == "y" || "$answer" == "Y" ]]; then
