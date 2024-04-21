@@ -27,7 +27,7 @@ Get a bot token from a botfather. And start the bot.
 
 3. And finally run the installation file with superuser <code>sudo</code> rights and follow the instructions
 <pre>
-<code>sudo bash screation.sh</code>
+<code>sudo bash creation.sh</code>
 </pre>
 
 Finished bot implementation -> <a href="https://t.me/yt_downloader_dmtana_bot">YT_downloader</a>
