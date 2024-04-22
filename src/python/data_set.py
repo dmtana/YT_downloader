@@ -11,6 +11,10 @@ class TemporaryCache:
 
     async def get_from_cache(self, key):
         return self.cache.get(key, None)
+    
+    async def remove_from_cache(self, key):
+        if key in self.cache:
+            del self.cache[key]
 
 class SelecMediaDownloader(CallbackData, prefix=''):
     media_type: str

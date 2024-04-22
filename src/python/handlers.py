@@ -94,7 +94,7 @@ async def text_handler(message: Message, bot: Bot):
             await bot.send_message(message.chat.id, "Бот не может качать весь плейлист, введите ссылку на отдедельную песню в формате 'https://...'\n\n"+
                                    "The bot cannot download the entire playlist, enter a link to an individual song in the format 'https://...")
         elif "https://" in args['link']:
-            # variable [message_info] need for delete message after sending file
+            # message_info need for delete message after sending file
             try:
                 key = generate_random_key()
                 key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
@@ -126,15 +126,16 @@ async def text_handler(message: Message, bot: Bot):
 
 # DOWNLOAD AND SEND VIDEO
 async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader):
-    arr = await my_cache.get_from_cache(callback_data.key)
+    arr = await my_cache.get_from_cache(callback_data.key) # kostyl
     message = arr[0]
     args = arr[1]
     user_name = arr[2]
+    await my_cache.remove_from_cache(callback_data.key) # kostyl
     ############################### testing
     try:
         await write_to_db(information=args['link'], id=str(message.chat.id), media_type='video', user_name=user_name, bot_name=message.from_user.full_name)
     except Exception as e:
-        print('[X][ERROR DATABASE WRITE]', e)
+        print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
 
     await bot.delete_message(message.chat.id, message.message_id)        
@@ -154,16 +155,17 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
 # DOWNLOAD AND SEND AUDIO
 async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
     download_and_send_audio_status = 0
-    arr = await my_cache.get_from_cache(callback_data.key)
+    arr = await my_cache.get_from_cache(callback_data.key) # kostyl
     message = arr[0]
     args = arr[1]
     user_name = arr[2]
+    await my_cache.remove_from_cache(callback_data.key) # kostyl
     ms = None
-    ############################### testing
+    ############################## testing
     try:
         await write_to_db(information=args['link'], id=str(message.chat.id), media_type='audio', user_name=user_name, bot_name=message.from_user.full_name)
     except Exception as e:
-        print('[X][ERROR DATABASE WRITE]', e)
+        print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
