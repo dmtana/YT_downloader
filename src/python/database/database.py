@@ -18,14 +18,13 @@ async def start_db():
                     bot_name text)
             ''')
     except Exception as e:
-        print('[problems]', e)    
+        print('[DATABASE][X][creation table problem]', e)    
     finally:
-        # Close the connection.
         try:
             await conn.close()
-            print('GOOOD')
+            print('[DATABASE][+][DONE TABLE]')
         except Exception as e:
-            print('[almost]')
+            print('[DATABASE][X][ERROR CLOSING in start_db()]')
 
 async def write_to_db(information='', id='', media_type='', user_name='', bot_name='', table_name='received'):
     try:
@@ -35,16 +34,11 @@ async def write_to_db(information='', id='', media_type='', user_name='', bot_na
                 INSERT INTO {table_name}(date_and_time, information, media_type, user_id, user_name, bot_name) VALUES($1, $2, $3, $4, $5, $6)
                 ''', datetime.now(), information, media_type, id, user_name, bot_name)
     except Exception as e:
-        print('[ZALUPA]', e)    
+        print('[DATABASE][X][write to db error]', e)    
     finally:
         # Close the connection.
         try:
             await conn.close()
-            print('GOOOD')
+            print('[DATABASE][+][DONE write to db]')
         except Exception as e:
-            print('NOT GOD')
-
-    print('[database]' ,'OK')
-
-# async def start_db():
-#     asyncio.get_event_loop().run_until_complete(bench_asyncpg_pool())
+            print('[DATABASE][X][ERROR CLOSING in write_to_db()]')
