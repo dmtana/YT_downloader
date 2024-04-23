@@ -97,6 +97,7 @@ async def text_handler(message: Message, bot: Bot):
             # message_info need for delete message after sending file
             try:
                 key = generate_random_key()
+                # 45-44 from 64 bytes for call_back data - 19 left 
                 key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
                 message_info = await message.reply("<b>DOWNLOAD</b>", 
                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
@@ -202,15 +203,17 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
     # FEEDBACK TO ADMINS
     ms = []
     try:
-        for admin_id in ADMINS_ID:
-            ms.append(await bot.send_message(chat_id=admin_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>")) 
+        if len(ADMINS_ID) > 0:
+            for admin_id in ADMINS_ID:
+                ms.append(await bot.send_message(chat_id=admin_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>")) 
     except Exception as e:
         print('[ERROR FEEDBACK TO ADMINS]', e)
         await message.reply('ERROR FEEDBACK, SEND MESSAGE TO ADMINS')
     # FEEDBACK TO MODERATORS
     try:
-        for mod_id in MODERATORS_ID:
-            ms.append(await bot.send_message(chat_id=mod_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>"))
+        if len(MODERATORS_ID) > 0:
+            for mod_id in MODERATORS_ID:
+                ms.append(await bot.send_message(chat_id=mod_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>"))
     except Exception as e:
         print('[ERROR FEEDBACK]', e)
         await message.reply('ERROR FEEDBACK, SEND MESSAGE TO MODERATORS')
