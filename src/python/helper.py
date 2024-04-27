@@ -157,7 +157,7 @@ async def send_audio(message, bot, file_id, group=''):
         try:
             duration += json_info['duration']
         except Exception as e:
-            print('[bot][-][DURATION GETING ERROR]')
+            print('[bot][X][DURATION GETING ERROR]')
     print('[bot][+][START SENDING]')
     try:
         audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3'
@@ -165,36 +165,36 @@ async def send_audio(message, bot, file_id, group=''):
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
         except Exception as e:
-            print('[bot][-][TRHUMBNAIL AUDIO MESSAGE ERROR]')
+            print('[bot][X][TRHUMBNAIL AUDIO MESSAGE ERROR]')
         try:
             await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail, duration=duration)
         except Exception as e:
-            print('[bot][-][ERROR AUDIO SENDING]', e)
+            print('[bot][X][ERROR AUDIO SENDING]', e)
             try:
                 await bot.send_document(message.chat.id, audio)
             except Exception as e:
-                print("[bot][-][ERROR SENDING AUDIO AS DOCUMENT]", e)
+                print("[bot][X][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
             try:
                 await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
                 send_audio_status = 6
             except Exception as e:
-                print('[bot][-][ERROR GROUP AUDIO SENDING]', e)
+                print('[bot][X][ERROR GROUP AUDIO SENDING]', e)
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
                 try:
                     await bot.send_document(chat_id=f'@{group}', document=audio, thumbnail=thumbnail)
                 except Exception as e:
-                    print('[bot][-][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
+                    print('[bot][X][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
         try:
             if del_file:
                 os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
                 print('[bot][+][FILE DELETED]')
         except Exception as e:
-            print('[bot][-][ERR OF FILE DELETE]')
+            print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
         await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
-        print("[bot][-][ERROR SENDING]", e)
+        print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
 
 async def download_media(URL, is_video=False):
@@ -215,7 +215,7 @@ async def download_media(URL, is_video=False):
                     done = 15
                 print('yt-dlp 2')    
         except Exception as e:
-                print("[bot][CAN'T GET JSON FROM LINK]", e)
+                print("[bot][X][CAN'T GET JSON FROM LINK]", e)
         done += 1
     if is_video:
         done = 0
@@ -258,7 +258,7 @@ async def download_media(URL, is_video=False):
                     cv2.imwrite(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', frame)
                     print("[bot][+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
                 except Exception as e:
-                    print("[bot][-][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
+                    print("[bot][X][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
                 if 'File is larger than max-filesize' in str(stdout):
                     error_message = str(f'<pre>File is larger than 50 Mb\n'+
                 'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -283,7 +283,7 @@ async def download_media(URL, is_video=False):
                 file.write(resource.read())
             print("[bot][+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]")    
         except Exception as e:
-            print("[bot][-][ERR DOWNLOAD IMAGE]", e)
+            print("[bot][X][ERR DOWNLOAD IMAGE]", e)
         try:
             cmd = str(f'yt-dlp -f ba '+
                       f'-o "{str_buf_fix(file_name)}" '+
@@ -309,7 +309,7 @@ async def download_media(URL, is_video=False):
                'Этот лимит может быть изменен в будущем.</pre>')
                 print(error_message)
         except Exception as e:
-            print("[bot][-][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
+            print("[bot][X][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
         await mp3_tag_editor.tag_edit(file_id)
     return file_id, error_message            
 

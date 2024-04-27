@@ -8,10 +8,15 @@ user='admin'
 passwd='postgres'
 db='bot_data'
 port='5432'
+port_pgadmin='2345'
 
 # PGADMIN CONFIG
 user_pg_admin='admin@admin.com'
 passwd_pg_admin='admin'
+
+# NETWORK TYPE
+network_mode='bridge'
+ports_locker=''
 
 read -p "Enter TOKEN: " TOKEN
 IFS=',' read -ra TOKENS <<< "$TOKEN"
@@ -19,9 +24,21 @@ IFS=',' read -ra TOKENS <<< "$TOKEN"
 echo "Run bot after install? Y/n"
 read answer
 
+echo "Use default network:
+1. Bridge (will block your host ports [$port],[$port_pgadmin] with virtual network ports)
+2. Localhost (will use your host's ports [$port],[$port_pgadmin])"
+
+read network_type
+if [[ "$network_type" == "2" ]]; then
+    network_mode='host'
+    host='localhost'
+    ports_locker='#'
+fi
+
 num_of_bots=${#TOKENS[@]}
 
-read -p "Use default database setting? Y/n: " yesno
+read -p "Use default database setting? 
+(NOT RECOMMENDED, PLEASE ENTER YOUR OWN CONFIG (type NO)) Y/n: " yesno
 
 if [[ "$yesno" != "yes" && "$yesno" != "y" || "$yesno" == "Y" ]]; then
     while true; do
@@ -67,12 +84,13 @@ EOL
 cat <<EOL >> docker-compose.yml
   database:
     image: postgres
+    network_mode: $network_mode
     environment:
       - POSTGRES_USER=$user
       - POSTGRES_PASSWORD=$passwd
       - POSTGRES_DB=$db
-    ports:
-      - "$port:5432" # в контейнере будет всегда 5432 он залочен
+$ports_locker    ports:
+$ports_locker      - "$port:5432" # в контейнере будет всегда 5432 он залочен
     volumes:
       - ./db_data:/var/lib/postgresql/data
 EOL
@@ -81,21 +99,23 @@ EOL
 cat <<EOL >> docker-compose.yml
   pg-admin:
     image: dpage/pgadmin4
+    network_mode: $network_mode
     environment:
       - PGADMIN_DEFAULT_EMAIL=$user_pg_admin
       - PGADMIN_DEFAULT_PASSWORD=$passwd_pg_admin
-      - PGADMIN_LISTEN_PORT=80
-    ports:
-      - "2345:80"
+      - PGADMIN_LISTEN_PORT=$port_pgadmin
+$ports_locker    ports:
+$ports_locker     - "$port_pgadmin:$port_pgadmin"
 EOL
 
 # Add bot images
-for ((x=0; x<num_of_bots; x++)); do
+for ((c=0; c<num_of_bots; c++)); do
     cat <<EOL >> docker-compose.yml
-  yt_downloader_$x:
-    image: bot_image_$x
+  yt_downloader_$c:
+    image: bot_image_$c
+    network_mode: $network_mode
     volumes:
-      - ./config_$x:/app/YT_downloader/src/python/config
+      - ./config_$c:/app/YT_downloader/src/python/config
 EOL
 done
 
