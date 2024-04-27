@@ -3,6 +3,7 @@ from data_set import SelecMediaDownloader
 from config.config import ADMINS_ID
 
 async def select_media_type(key: str, user_id=None):
+    # 19 symbols left to call_back data 
     kb = InlineKeyboardBuilder()
 
     kb.button(text="AUDIO", callback_data=SelecMediaDownloader(media_type='audio', key=key))
