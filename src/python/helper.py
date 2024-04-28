@@ -162,7 +162,7 @@ async def send_voice(message, bot, file_id, group=''):
             print('[bot][X][DURATION GETING ERROR FOR VOICE]')
     print('[bot][+][START SENDING VOICE]')
     try:
-        cmd = str(f'ffmpeg -i "{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3" -c:a libopus -b:a 32k "{curren_path}media_from_yt/{str_buf_fix(file_name)}.ogg"')
+        cmd = str(f'ffmpeg -i "{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3" -c:a libopus -b:a 32k -vbr on -compression_level 10 -frame_duration 60 -application voip "{curren_path}media_from_yt/{str_buf_fix(file_name)}.opus"')
         process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = await process.communicate()
         print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
@@ -171,7 +171,7 @@ async def send_voice(message, bot, file_id, group=''):
     except Exception as e:
         print('ERR CONVERTING', e)    
     try:
-        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.ogg'
+        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.opus'
         audio = FSInputFile(audio_file)
         try:
             await bot.send_voice(message.chat.id, voice=audio, duration=duration)
@@ -198,7 +198,7 @@ async def send_voice(message, bot, file_id, group=''):
         try:
             if del_file:
                 os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
-                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.ogg')
+                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.opus')
                 print('[bot][+][FILE DELETED]')
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
