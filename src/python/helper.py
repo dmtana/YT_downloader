@@ -84,7 +84,7 @@ def get_args(m : str):
     print('[bot][+][ARG]')    
     return commands
 
-async def send_video(message, bot, file_id=''):
+async def send_video(message, bot, file_id='', group=''):
     duration = None
     file_name = ''
     thumbnail = None
@@ -146,6 +146,67 @@ async def send_video(message, bot, file_id=''):
     except Exception as e:
         print('[bot][X][ERR OF DEL]')
 
+
+async def send_voice(message, bot, file_id, group=''):
+
+    send_audio_status = 0
+    file_name = ""
+    duration = None
+
+    with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
+        json_info = json.loads(file.read())
+        file_name += json_info['title']
+        try:
+            duration += json_info['duration']
+        except Exception as e:
+            print('[bot][X][DURATION GETING ERROR FOR VOICE]')
+    print('[bot][+][START SENDING VOICE]')
+    try:
+        cmd = str(f'ffmpeg -i "{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3" -c:a libopus -b:a 32k "{curren_path}media_from_yt/{str_buf_fix(file_name)}.ogg"')
+        process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = await process.communicate()
+        print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+        print('[cmd][+][DONE CONVERTING]')
+    except Exception as e:
+        print('ERR CONVERTING', e)    
+    try:
+        audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.ogg'
+        audio = FSInputFile(audio_file)
+        try:
+            await bot.send_voice(message.chat.id, voice=audio, duration=duration)
+        except Exception as e:
+            print('[bot][X][ERROR AUDIO SENDING]', e)
+            if 'VOICE_MESSAGES_FORBIDDEN' in str(e):
+                await bot.send_message(chat_id=message.chat.id, text=f'This users privacy settings forbid you from sending voice messages. {str(e)}')
+            try:
+                await bot.send_document(message.chat.id, audio)
+            except Exception as e:
+                print("[bot][X][ERROR SENDING VOICE AS DOCUMENT]", e)
+        if group != '':
+            try:
+                await bot.send_voice(chat_id=f'@{group}', voice=audio, duration=duration)
+                send_audio_status = 6
+            except Exception as e:
+                print('[bot][X][ERROR GROUP VOICE SENDING]', e)
+                await bot.send_message(chat_id=message.chat.id, text=str(e))
+                print('[Ошибка отправки в группу!]', e)
+                try:
+                    await bot.send_document(chat_id=f'@{group}', document=audio)
+                except Exception as e:
+                    print('[bot][X][ERROR GROUP VOICE SENDING AS DOCUMENT]', e)
+        try:
+            if del_file:
+                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
+                os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.ogg')
+                print('[bot][+][FILE DELETED]')
+        except Exception as e:
+            print('[bot][X][ERR OF FILE DELETE]')
+    except Exception as e:
+        await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
+        print("[bot][X][ERROR SENDING]", e)
+    return send_audio_status   
+
 async def send_audio(message, bot, file_id, group=''):
     send_audio_status = 0
     file_name = ""
@@ -167,7 +228,7 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][TRHUMBNAIL AUDIO MESSAGE ERROR]')
         try:
-            await bot.send_audio(message.chat.id, audio, thumbnail=thumbnail, duration=duration)
+            await bot.send_audio(message.chat.id, audio=audio, thumbnail=thumbnail, duration=duration)
         except Exception as e:
             print('[bot][X][ERROR AUDIO SENDING]', e)
             try:
