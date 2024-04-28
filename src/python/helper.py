@@ -137,7 +137,7 @@ async def send_video(message, bot, file_id='', group=''):
             print("[bot][+][DONE SENDING AS DOCUMENT]", datetime.datetime.now())
         except Exception as e:
             pass
-            await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(")
+            await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\n{str(e)}")
             print("[bot][X][ERROR SENDING AS DOCUMENT]", e)
     try:
         if del_file:
@@ -146,18 +146,15 @@ async def send_video(message, bot, file_id='', group=''):
     except Exception as e:
         print('[bot][X][ERR OF DEL]')
 
-
 async def send_voice(message, bot, file_id, group=''):
-
     send_audio_status = 0
     file_name = ""
     duration = None
-
     with open(f"{curren_path}JSON_INFO_MP3/{file_id}.json", "r") as file:
         json_info = json.loads(file.read())
         file_name += json_info['title']
         try:
-            duration += json_info['duration']
+            duration = json_info['duration']
         except Exception as e:
             print('[bot][X][DURATION GETING ERROR FOR VOICE]')
     print('[bot][+][START SENDING VOICE]')
@@ -169,7 +166,7 @@ async def send_voice(message, bot, file_id, group=''):
                 f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
         print('[cmd][+][DONE CONVERTING]')
     except Exception as e:
-        print('ERR CONVERTING', e)    
+        print('[cmd][X][ERR CONVERTING]', e)    
     try:
         audio_file = f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.opus'
         audio = FSInputFile(audio_file)
@@ -203,7 +200,7 @@ async def send_voice(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
+        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e)}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status   
 
@@ -216,7 +213,7 @@ async def send_audio(message, bot, file_id, group=''):
         json_info = json.loads(file.read())
         file_name += json_info['title']
         try:
-            duration += json_info['duration']
+            duration = json_info['duration']
         except Exception as e:
             print('[bot][X][DURATION GETING ERROR]')
     print('[bot][+][START SENDING]')
@@ -254,7 +251,7 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, "ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER")
+        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e)}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
 
