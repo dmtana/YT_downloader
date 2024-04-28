@@ -41,6 +41,7 @@ async def handlers_reg(dp: Dispatcher):
     # SELECTORS MEDIA DOWNLOADER
     dp.callback_query.register(download_and_send_audio, SelecMediaDownloader.filter(F.media_type == 'audio'))
     dp.callback_query.register(download_and_send_video, SelecMediaDownloader.filter(F.media_type == 'video'))
+    dp.callback_query.register(download_and_send_voice, SelecMediaDownloader.filter(F.media_type == 'voice'))
 
     # ADDITIONAL MEDIA HANDLER
     dp.callback_query.register(send_audio_to_group, SelecMediaDownloader.filter(F.media_type == 'music'))
@@ -154,7 +155,8 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
             await bot.delete_message(message.chat.id, ms.message_id)      
 
 # DOWNLOAD AND SEND AUDIO
-async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
+async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group='', voice=False):
+    media_type='audio'
     download_and_send_audio_status = 0
     arr = await my_cache.get_from_cache(callback_data.key) # kostyl
     message = arr[0]
@@ -164,7 +166,9 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     ms = None
     ############################## testing
     try:
-        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='audio', user_name=user_name, bot_name=message.from_user.full_name)
+        if voice:
+            media_type='voice'
+        await write_to_db(information=args['link'], id=str(message.chat.id), media_type=media_type, user_name=user_name, bot_name=message.from_user.full_name)
     except Exception as e:
         print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
@@ -173,7 +177,10 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
         try:    
             ms = await call.message.answer('Downloading...')    
             file_id, err_msg = await helper.download_media(args['link'])
-            download_and_send_audio_status = await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)
+            if voice:
+                download_and_send_audio_status = await helper.send_voice(message=message, bot=bot, file_id=file_id, group=group)
+            else:    
+                download_and_send_audio_status = await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)
             if err_msg:
                 await call.message.answer(err_msg)                
         except Exception as e:
@@ -184,6 +191,9 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
             if ms:
                 await bot.delete_message(message.chat.id, ms.message_id) 
     return download_and_send_audio_status            
+
+async def download_and_send_voice(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
+    await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group, voice=True)
 
 # DOWNLOAD AND SEND AUDIO TO GROUP
 async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=None):

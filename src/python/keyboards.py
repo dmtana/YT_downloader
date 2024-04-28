@@ -8,14 +8,15 @@ async def select_media_type(key: str, user_id=None):
 
     kb.button(text="AUDIO", callback_data=SelecMediaDownloader(media_type='audio', key=key))
     kb.button(text="VIDEO", callback_data=SelecMediaDownloader(media_type='video', key=key))
+    kb.button(text="VOICE", callback_data=SelecMediaDownloader(media_type='voice', key=key))
     
     if user_id in ADMINS_ID:
         kb.button(text="MUSIC", callback_data=SelecMediaDownloader(media_type='music', key=key))
         kb.button(text="RELAX", callback_data=SelecMediaDownloader(media_type='relax', key=key))
         kb.button(text="ROCK", callback_data=SelecMediaDownloader(media_type='rock', key=key))
 
-        kb.adjust(2,3)
+        kb.adjust(2,1,3)
         return kb.as_markup()
     else:    
-        kb.adjust(2)
+        kb.adjust(2,1)
         return kb.as_markup()
