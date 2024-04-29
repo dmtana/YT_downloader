@@ -18,6 +18,10 @@ async def set_commands(bot: Bot):
             description='Leave feedback to the author'
         ),
         BotCommand(
+            command='settings',
+            description='Settings is coming soon'
+        ),
+        BotCommand(
             command='languge',
             description='Languages is coming soon'
         ),
