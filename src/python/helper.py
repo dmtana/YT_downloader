@@ -307,7 +307,7 @@ async def download_media(URL, is_video=False):
                     cap = cv2.VideoCapture(video_path)
                     if not cap.isOpened():
                         print("err open file")
-                    frame_number = random.randint(0, 45)
+                    frame_number = random.choice([random.randint(0, 45), 0, 0]) # 0 will fall out 3 times more often, 0 means first frame
                     for i in range(frame_number + 1):
                         ret, frame = cap.read()
                         if not ret:

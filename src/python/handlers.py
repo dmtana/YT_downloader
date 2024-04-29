@@ -1,3 +1,5 @@
+import asyncio
+import subprocess
 from config.config import ADMINS_ID, MODERATORS_ID
 from config.config import START_TEXT
 from config.config import GROUP1, GROUP2, GROUP3
@@ -29,6 +31,7 @@ async def handlers_reg(dp: Dispatcher):
     dp.message.register(get_start, Command(commands=['start']))
     dp.message.register(get_help, Command(commands=['help']))
     dp.message.register(get_feedback, Command(commands=['feedback']))
+    dp.message.register(settings, Command(commands=['settings']))
     dp.message.register(set_language, Command(commands=['languge']))
     dp.message.register(get_version, Command(commands=['version']))
 
@@ -73,13 +76,25 @@ async def get_feedback(message: Message, state: FSMContext):
     await state.set_state(FeedbackForm.RECEIVING_FEEDBACK)
     print('состояние установлено')
 
-# VERSION COMMAND HANDLER
+# SETTING COMMAND HANDLER
+async def settings(message: Message, bot: Bot):
+    await message.answer(f'Settings is coming soon\nWe working on it')
+
+# LANGUAGE COMMAND HANDLER
 async def set_language(message: Message, bot: Bot):
     await message.answer(f'Languages is coming soon\nWe working on it')
 
 # VERSION COMMAND HANDLER
 async def get_version(message: Message, bot: Bot):
-    await message.answer(f'Version: <b>{VERSION}</b>{description}')
+    yt_dlp_lib = ''
+    try:
+        cmd = str(f'yt-dlp --version')
+        process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = await process.communicate()
+        yt_dlp_lib = stdout.decode("utf-8") + stderr.decode("utf-8")
+    except Exception as e:
+        print('[cmd][X][YT-DLP VERSION]', e)   
+    await message.answer(f'Version: <b>{VERSION}</b>{description}\nversion of yt-dlp: <i>{yt_dlp_lib}</i>')
 
 
 #################################
