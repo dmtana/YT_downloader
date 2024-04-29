@@ -15,7 +15,7 @@ Get a bot token from a botfather. And start the bot.
 
 <h3>Creation script for docker:</h3>
 
-1. First create a folder
+1. First create a folder (for more convenient use)
 <pre>
 <code>mkdir bot_folder</code>
 </pre>
