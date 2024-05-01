@@ -234,14 +234,15 @@ async def send_audio(message, bot, file_id, group=''):
                 print("[bot][X][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
             try:
-                await bot.send_audio(chat_id=f'@{group}', audio=audio, thumbnail=thumbnail, duration=duration)
+                # important thing is @ symbol for groups. I moved this to config file
+                await bot.send_audio(chat_id=f'{group}', audio=audio, thumbnail=thumbnail, duration=duration)
                 send_audio_status = 6
             except Exception as e:
                 print('[bot][X][ERROR GROUP AUDIO SENDING]', e)
                 await bot.send_message(chat_id=message.chat.id, text=str(e))
                 print('[Ошибка отправки в группу!]', e)
                 try:
-                    await bot.send_document(chat_id=f'@{group}', document=audio, thumbnail=thumbnail)
+                    await bot.send_document(chat_id=f'{group}', document=audio, thumbnail=thumbnail)
                 except Exception as e:
                     print('[bot][X][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
         try:
