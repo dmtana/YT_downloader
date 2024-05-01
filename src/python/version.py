@@ -1,7 +1,16 @@
-VERSION = '2024.04.27'
+VERSION = '2024.05.01'
 description = '''<i>
-- added voice downloading option
+- minor updates and bugfixes
+- updates of libs 
+- edit config file group - remove '@' simbol
+- added showing version of used libs
 </i>'''
+
+
+# VERSION = '2024.04.27'
+# description = '''<i>
+# - added voice downloading option
+# </i>'''
 
 # VERSION = '2024.04.20'
 # description = '''<i>

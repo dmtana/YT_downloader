@@ -1,5 +1,3 @@
-import asyncio
-import subprocess
 from config.config import ADMINS_ID, MODERATORS_ID
 from config.config import START_TEXT
 from config.config import GROUP1, GROUP2, GROUP3
@@ -18,6 +16,8 @@ from side_menu import set_commands
 from version import VERSION, description
 
 from database.database import write_to_db, start_db
+
+from get_version_new import get_version_new
 
 import helper
 import keyboards
@@ -86,15 +86,12 @@ async def set_language(message: Message, bot: Bot):
 
 # VERSION COMMAND HANDLER
 async def get_version(message: Message, bot: Bot):
-    yt_dlp_lib = ''
+    ver_of_lib = ''
     try:
-        cmd = str(f'yt-dlp --version')
-        process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = await process.communicate()
-        yt_dlp_lib = stdout.decode("utf-8") + stderr.decode("utf-8")
+        ver_of_lib = await get_version_new()
     except Exception as e:
-        print('[cmd][X][YT-DLP VERSION]', e)   
-    await message.answer(f'Version: <b>{VERSION}</b>{description}\nversion of yt-dlp: <i>{yt_dlp_lib}</i>')
+        print(e)    
+    await message.answer(f'Version: <b>{VERSION}</b>{description}\n{ver_of_lib}')
 
 
 #################################
