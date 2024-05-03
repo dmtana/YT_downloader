@@ -151,8 +151,8 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     except Exception as e:
         print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
-
-    await bot.delete_message(message.chat.id, message.message_id)        
+    ms = None
+    await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_video(chat_id=call.message.chat.id, bot=bot):
         try:
             ms = await call.message.answer(f'Downloading...')
@@ -164,7 +164,8 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
             await call.message.answer('ERROR INPUT, WRONG LINK')
             print('ERROR VIDEO - ', e)
         finally: 
-            await bot.delete_message(message.chat.id, ms.message_id)      
+            if ms:
+                await bot.delete_message(message.chat.id, ms.message_id)     
 
 # DOWNLOAD AND SEND AUDIO
 async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group='', voice=False):
@@ -202,8 +203,10 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
             print('[bot][+][DONE DOWNLOADING]')
             if ms:
                 await bot.delete_message(message.chat.id, ms.message_id) 
-    return download_and_send_audio_status            
+    if download_and_send_audio_status > 5:
+        await call.message.answer(f'<b>Sent in {group} +</b>')                       
 
+# DOWNLOAD AND SEND VOICE
 async def download_and_send_voice(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
     await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group, voice=True)
 
@@ -216,11 +219,10 @@ async def send_audio_to_group(call: CallbackQuery, bot: Bot, callback_data: Sele
         group=GROUP2
     if callback_data.media_type == 'rock':
         group=GROUP3
+    await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group)
 
-    send_status = await download_and_send_audio(call=call, bot=bot, callback_data=callback_data, group=group)
-    if send_status > 5:
-        await call.message.answer(f'<b>Sent in {group} +</b>')
-
+#################################
+# GETTING FEEDBACK
 async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
     # FEEDBACK TO ADMINS
     ms = []
