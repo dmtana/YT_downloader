@@ -151,8 +151,8 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     except Exception as e:
         print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
-    ms = None
     await bot.delete_message(message.chat.id, message.message_id)
+    ms = None
     async with ChatActionSender.upload_video(chat_id=call.message.chat.id, bot=bot):
         try:
             ms = await call.message.answer(f'Downloading...')
