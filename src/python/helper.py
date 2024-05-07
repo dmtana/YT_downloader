@@ -106,6 +106,12 @@ async def send_video(message, bot, file_id='', group=''):
                 if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200: # tg limit for thumbnail
                     await compress_image(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
                     thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
+                    if width is None:
+                        try:
+                            img = Image.open(f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
+                            width, height = img.size
+                        except Exception as e:
+                            print(e)
             except Exception as e:
                 print('[helper][X][ERROR CONVERTER ON SEND_VIDEO]', e)
         except Exception as e:
