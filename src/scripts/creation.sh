@@ -3,7 +3,7 @@
 TOKENS=()
 
 # DATABASE CONFIG
-host='database'
+host='localhost'
 user='admin'
 passwd='postgres'
 db='bot_data'
@@ -15,8 +15,8 @@ user_pg_admin='admin@admin.com'
 passwd_pg_admin='admin'
 
 # NETWORK TYPE
-network_mode='bridge'
-ports_locker=''
+network_mode_host=''
+ports_locker='#'
 
 read -p "Enter TOKEN: " TOKEN
 IFS=',' read -ra TOKENS <<< "$TOKEN"
@@ -25,14 +25,18 @@ echo "Run bot after install? Y/n"
 read answer
 
 echo "Use default network:
-1. Bridge (will block your host ports [$port],[$port_pgadmin] with virtual network ports)
-2. Localhost (will use your host's ports [$port],[$port_pgadmin])"
+1. Default (will block your host ports [$port],[$port_pgadmin] with virtual network ports) 
+(RECOMMENDED)
+2. Localhost (will use your host's ports [$port],[$port_pgadmin])
+Enter your choice: "
 
 read network_type
-if [[ "$network_type" == "2" ]]; then
-    network_mode='host'
-    host='localhost'
-    ports_locker='#'
+
+if [[ "$network_type" != "2" ]]; then
+    network_mode_host='#'
+    host='database'
+    ports_locker=''
+    echo "You selected Default network from Docker!"
 fi
 
 num_of_bots=${#TOKENS[@]}
@@ -81,31 +85,37 @@ services:
 EOL
 
 # Add database service
+cat <<EOL > docker-compose.yml
+version: '3.9'
+services:
+EOL
+
+# Add database service
 cat <<EOL >> docker-compose.yml
   database:
     image: postgres
-    network_mode: $network_mode
     environment:
       - POSTGRES_USER=$user
       - POSTGRES_PASSWORD=$passwd
       - POSTGRES_DB=$db
 $ports_locker    ports:
-$ports_locker      - "$port:5432" # в контейнере будет всегда 5432 он залочен
+$ports_locker      - "$port:5432" # there will always be 5432 in the container
     volumes:
       - ./db_data:/var/lib/postgresql/data
+$network_mode_host    network_mode: host
 EOL
 
 # Add pgadmin4 service
 cat <<EOL >> docker-compose.yml
   pg-admin:
     image: dpage/pgadmin4
-    network_mode: $network_mode
     environment:
       - PGADMIN_DEFAULT_EMAIL=$user_pg_admin
       - PGADMIN_DEFAULT_PASSWORD=$passwd_pg_admin
       - PGADMIN_LISTEN_PORT=$port_pgadmin
 $ports_locker    ports:
-$ports_locker     - "$port_pgadmin:$port_pgadmin"
+$ports_locker      - "$port_pgadmin:$port_pgadmin"
+$network_mode_host    network_mode: host
 EOL
 
 # Add bot images
@@ -113,9 +123,9 @@ for ((c=0; c<num_of_bots; c++)); do
     cat <<EOL >> docker-compose.yml
   yt_downloader_$c:
     image: bot_image_$c
-    network_mode: $network_mode
     volumes:
       - ./config_$c:/app/YT_downloader/src/python/config
+$network_mode_host    network_mode: host
 EOL
 done
 
