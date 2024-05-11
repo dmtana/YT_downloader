@@ -16,7 +16,7 @@ from aiogram import Bot
 from aiogram.types import Message, FSInputFile
 from aiogram.utils.chat_action import ChatActionSender
 
-from config.config import SITE_1
+from config.config import SITE_1, TOKEN
 
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cat', 'pusy']
@@ -143,7 +143,7 @@ async def send_video(message, bot, file_id='', group=''):
             print("[bot][+][DONE SENDING AS DOCUMENT]", datetime.datetime.now())
         except Exception as e:
             pass
-            await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\n{str(e)}")
+            await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\n{str(e).replace(TOKEN, '')}")
             print("[bot][X][ERROR SENDING AS DOCUMENT]", e)
     try:
         if del_file:
@@ -181,7 +181,7 @@ async def send_voice(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERROR AUDIO SENDING]', e)
             if 'VOICE_MESSAGES_FORBIDDEN' in str(e):
-                await bot.send_message(chat_id=message.chat.id, text=f'This users privacy settings forbid you from sending voice messages. {str(e)}')
+                await bot.send_message(chat_id=message.chat.id, text=f'This users privacy settings forbid you from sending voice messages. {str(e).replace(TOKEN, '')}')
             try:
                 await bot.send_document(message.chat.id, audio)
             except Exception as e:
@@ -192,7 +192,7 @@ async def send_voice(message, bot, file_id, group=''):
                 send_audio_status = 6
             except Exception as e:
                 print('[bot][X][ERROR GROUP VOICE SENDING]', e)
-                await bot.send_message(chat_id=message.chat.id, text=str(e))
+                await bot.send_message(chat_id=message.chat.id, text=str(e).replace(TOKEN, ''))
                 print('[Ошибка отправки в группу!]', e)
                 try:
                     await bot.send_document(chat_id=f'@{group}', document=audio)
@@ -206,7 +206,7 @@ async def send_voice(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e)}")
+        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status   
 
@@ -245,7 +245,7 @@ async def send_audio(message, bot, file_id, group=''):
                 send_audio_status = 6
             except Exception as e:
                 print('[bot][X][ERROR GROUP AUDIO SENDING]', e)
-                await bot.send_message(chat_id=message.chat.id, text=str(e))
+                await bot.send_message(chat_id=message.chat.id, text=str(e).replace(TOKEN, ''))
                 print('[Ошибка отправки в группу!]', e)
                 try:
                     await bot.send_document(chat_id=f'{group}', document=audio, thumbnail=thumbnail)
@@ -258,7 +258,7 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e)}")
+        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
 
@@ -284,10 +284,10 @@ async def download_media(URL, is_video=False):
         done += 1
     if is_video:
         done = 0
+        quality = 'b' # best
         while done < 15: # kostyl for facebook reels and tiktok
             print("[bot][DOWNLOADING VIDEO]")
             try:
-                quality = 'b' # best
                 if 'tiktok' in URL:
                     quality = '0'
                 elif SITE_1 in URL:
@@ -325,6 +325,8 @@ async def download_media(URL, is_video=False):
                 except Exception as e:
                     print("[bot][X][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
                 if 'File is larger than max-filesize' in str(stdout):
+                    # quality = 'w' # worst quality
+                    done += 13
                     error_message = str(f'<pre>File is larger than 50 Mb\n'+
                 'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
                 'поэтому да, очень большие файлы пока не будут работать. Извини. '+
