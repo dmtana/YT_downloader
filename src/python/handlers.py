@@ -188,7 +188,7 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
         try:    
-            ms = await call.message.answer('Downloading...')    
+            ms = await call.message.answer('Downloading...')
             file_id, err_msg = await helper.download_media(args['link'])
             if voice:
                 download_and_send_audio_status = await helper.send_voice(message=message, bot=bot, file_id=file_id, group=group)
