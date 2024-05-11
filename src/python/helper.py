@@ -181,7 +181,7 @@ async def send_voice(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERROR AUDIO SENDING]', e)
             if 'VOICE_MESSAGES_FORBIDDEN' in str(e):
-                await bot.send_message(chat_id=message.chat.id, text=f'This users privacy settings forbid you from sending voice messages. {str(e).replace(TOKEN, "")}')
+                await bot.send_message(chat_id=message.chat.id, text=f"This users privacy settings forbid you from sending voice messages. {str(e).replace(TOKEN, '')}")
             try:
                 await bot.send_document(message.chat.id, audio)
             except Exception as e:
