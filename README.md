@@ -17,10 +17,11 @@ Get a bot token from a botfather. And start the bot.
 
 1. First create a folder (for more convenient use)
 <pre>
-<code>mkdir bot_folder</code>
+<code>mkdir bot_folder
+cd bot_folder</code>
 </pre>
     
-2. Then go to the folder you created <code>cd bot_folder</code> and copy the installation file from the repository
+2. Then copy the installation file from the repository
 <pre>
 <code>wget "https://raw.githubusercontent.com/dmtana/YT_downloader/master/src/scripts/creation.sh"</code>
 </pre>  
