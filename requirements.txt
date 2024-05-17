@@ -1,0 +1,8 @@
+yt-dlp
+aiofiles
+aiogram
+aiohttp
+asyncpg
+Pillow
+ffmpeg-python
+opencv-python
