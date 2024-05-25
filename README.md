@@ -6,9 +6,9 @@ Based on <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> library.
 
 <h2>How to create your own YT_downloader bot</h2>
 
-Get a bot token from a <a href="https://t.me/BotFather">botfather</a>. And start the bot.
+Get a bot token from a <a href="https://t.me/BotFather">botfather</a>. And start the bot using this simple instruction.
 
-<h3>Creation script for docker:</h3>
+<h3>Creation script (docker based):</h3>
 
 1. First create a folder (for more convenient use)
 <pre>
