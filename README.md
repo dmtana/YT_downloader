@@ -6,12 +6,7 @@ Based on <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> library.
 
 <h2>How to create your own YT_downloader bot</h2>
 
-Fisrt off all you need to install <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> on youre PC or Linux or Mac. 
-Then you need download <a href="https://github.com/aiogram/aiogram">aiogram</a> and <a href="https://ffmpeg.org/" class="link">ffmpeg</a>. 
-You need to place ffmpeg.exe in the root of the project with the executable code if You have Windows. 
-For Linux or Mac just install using terminal or <a href="https://brew.sh/">homebrew</a>. 
-
-Get a bot token from a botfather. And start the bot.
+Get a bot token from a <a href="https://t.me/BotFather">botfather</a>. And start the bot.
 
 <h3>Creation script for docker:</h3>
 
