@@ -149,7 +149,7 @@ RUN chmod +x /app/YT_downloader/src/scripts/script.sh
 RUN mv /app/config.py /app/YT_downloader/src/python/config/
 RUN apt-get update
 RUN apt-get install -y ffmpeg
-CMD [\"./app/YT_downloader/src/scripts/script.sh\"]" > Dockerfile
+CMD [\"./YT_downloader/src/scripts/script.sh\"]" > Dockerfile
 
 echo "
 #YT_downloader
