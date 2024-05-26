@@ -143,27 +143,13 @@ FROM python:3.8
 WORKDIR /app
 COPY . /app
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-RUN chmod +x /app/script.sh
 RUN git clone https://github.com/dmtana/YT_downloader
+RUN pip install --no-cache-dir -r /app/YT_downloader/requirements.txt
+RUN chmod +x /app/script.sh
 RUN mv /app/config.py /app/YT_downloader/src/python/config/
 RUN apt-get update
 RUN apt-get install -y ffmpeg
-CMD [\"./script.sh\"]" > Dockerfile
-
-echo "#!/bin/bash
-cd /app/YT_downloader/src/python/ 
-git pull 
-python3 bot.py" > script.sh
-
-echo "yt-dlp
-aiofiles
-aiogram
-aiohttp
-asyncpg
-Pillow
-ffmpeg-python
-opencv-python" > requirements.txt
+CMD [\"./app/YT_downloader/src/scripts/script.sh\"]" > Dockerfile
 
 echo "
 #YT_downloader
