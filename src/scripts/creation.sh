@@ -145,7 +145,7 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN git clone https://github.com/dmtana/YT_downloader
 RUN pip install --no-cache-dir -r /app/YT_downloader/requirements.txt
-RUN chmod +x /app/script.sh
+RUN chmod +x /app/YT_downloader/src/scripts/script.sh
 RUN mv /app/config.py /app/YT_downloader/src/python/config/
 RUN apt-get update
 RUN apt-get install -y ffmpeg
