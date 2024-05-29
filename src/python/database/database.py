@@ -10,7 +10,7 @@ async def start_db():
         await conn.execute('''
                 CREATE TABLE IF NOT EXISTS received (
                     id serial PRIMARY KEY,
-                    date_and_time date,
+                    date_and_time TIMESTAMP,
                     information text,
                     media_type text,
                     user_id text,
