@@ -1,4 +1,4 @@
-VERSION = '2024.06.07'
+VERSION = '2024.06.08'
 description = '''<i>
 - added processing of requests in multi-threaded mode, faster downloading and sending videos
 - removed unused side menu items 
@@ -8,6 +8,7 @@ description = '''<i>
 - added bot uptime
 - minor optimization after selecting downloadable content
 - fix size for audio thumbnail
+- fix tiktok bug
 </i>'''
 
 
