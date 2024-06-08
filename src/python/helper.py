@@ -281,15 +281,17 @@ async def download_media(URL, is_video=False):
         done += 1
     if is_video:
         done = 0
-        quality = 'b' # best
+        quality = ''
         while done < 15: # kostyl for facebook reels and tiktok
             print("[bot][DOWNLOADING VIDEO]")
             try:
                 if 'tiktok' in URL:
-                    quality = '0'
+                    quality = ''
                 elif SITE_1 in URL:
-                    quality = 'w' # worst
-                cmd = str(f'yt-dlp -f {quality} '+
+                    quality = '-f w' # worst
+                else: 
+                    quality = '-f b' # best
+                cmd = str(f'yt-dlp {quality} '+
                         f'--max-filesize 50M '+ # KOSTYL for tg
                         f'-P "{curren_path}video" '+
                         f'-o "{str_buf_fix(file_id)}.mp4" '+
