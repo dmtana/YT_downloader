@@ -1,6 +1,4 @@
-import asyncio
-import json
-import subprocess
+import requests
 import version
 import helper
 
@@ -40,8 +38,26 @@ async def send_version(TOKEN, CHAT_ID, uptime, parse_mode='HTML'):
     except Exception as e:
         print(e)
 
+    check_version = ''
+
+    try:
+        # check for latest version on github
+        url = 'https://raw.githubusercontent.com/dmtana/YT_downloader/master/src/python/version.py'
+        response = requests.get(url)
+        response.raise_for_status()
+        config_content = response.text
+        config = {}
+        exec(config_content, config)
+        if version.VERSION == config.get('VERSION'):
+            check_version += '(Latest)'
+        else:
+            check_version += f"A new version is available {config.get('VERSION')}, please reboot the server to update."
+            pass    
+    except Exception as e:
+        print(e)   
+
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
-    msg = f'Version: <b>{version.VERSION}</b>\n{version.description}\n{ver_of_lib}\n\nUptime: {uptime_str}'
+    msg = f'Version: <b>{version.VERSION}</b> <i>{check_version}</i>\n{version.description}\n{ver_of_lib}\n\nUptime: {uptime_str}'
 
     try:
         await bot.send_message(chat_id=CHAT_ID, text=msg)
