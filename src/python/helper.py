@@ -26,18 +26,6 @@ del_file = True
 
 # fix for .venv py
 curren_path = os.path.dirname(__file__)+'/'
-
-# START BUGFIX
-async def create_folders():
-    if not os.path.exists(curren_path+'video'):
-        os.makedirs(curren_path+'video')
-    if not os.path.exists(curren_path+'media_from_yt'):
-        os.makedirs(curren_path+'media_from_yt') 
-    if not os.path.exists(curren_path+'photo/Thumbnails'):
-        os.makedirs(curren_path+'photo/Thumbnails') 
-    if not os.path.exists(curren_path+'JSON_INFO_MP3'):
-        os.makedirs(curren_path+'JSON_INFO_MP3') 
-    print('[bot][+][Folder created!]')    
     
 async def save_json(a, j): #this method save json info
     folder = curren_path+'JSON_INFO_MP3'
@@ -85,6 +73,8 @@ def get_args(m : str):
     return commands
 
 async def send_video(message, bot, file_id='', group=''):
+    #chat_id=message.chat.id, 
+    chat_id = message
     duration = None
     file_name = ''
     thumbnail = None
@@ -127,7 +117,7 @@ async def send_video(message, bot, file_id='', group=''):
         video = FSInputFile(video_file)
         # thumbnail = FSInputFile(f'{curren_path}киркоров.jpg')
         await bot.send_video(
-            chat_id=message.chat.id, 
+            chat_id=chat_id, 
             video=video, 
             width=width, 
             height=height,
@@ -139,11 +129,11 @@ async def send_video(message, bot, file_id='', group=''):
         try:
             video_file = f'{curren_path}video/{str_buf_fix(file_name)}.mp4'    
             video = FSInputFile(video_file)
-            await bot.send_document(chat_id=message.chat.id, document=video)
+            await bot.send_document(chat_id=chat_id, document=video)
             print("[bot][+][DONE SENDING AS DOCUMENT]", datetime.datetime.now())
         except Exception as e:
             pass
-            await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\n{str(e).replace(TOKEN, '')}")
+            await bot.send_message(chat_id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\n{str(e).replace(TOKEN, '')}")
             print("[bot][X][ERROR SENDING AS DOCUMENT]", e)
     try:
         if del_file:
@@ -380,20 +370,6 @@ async def download_media(URL, is_video=False):
         await mp3_tag_editor.tag_edit(file_id)
     return file_id, error_message            
 
-async def delete_file(max_day=3, folder_path = 'JSON_INFO_MP3'):
-    folder_path = curren_path+folder_path
-    print(folder_path)
-    now = time.time()
-    try:
-        for file_name in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, file_name)
-            if os.path.isfile(file_path):
-                if os.stat(file_path).st_mtime < now - max_day * 86400:
-                    os.remove(file_path)
-                    print(f'[bot][DELETE FILE]: {file_path}')
-    except Exception as e:
-        print(f'[bot][NO DIR: {folder_path}]')
-
 async def compress_image(input_path, output_path, target_size_kb = 200):
     try:
         with Image.open(input_path) as img:
@@ -411,7 +387,7 @@ async def compress_image(input_path, output_path, target_size_kb = 200):
 async def show_cat(message: Message, bot: Bot):
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
         try:
-            cat_image_path = curren_path+f'photo/Cats/cat{random.randint(1, 7)}.jpeg'
+            cat_image_path = curren_path+f'photo/Cats/cat{random.randint(1, 8)}.jpeg'
             image = FSInputFile(cat_image_path)
             await bot.send_photo(message.chat.id, image)
         except Exception as e:

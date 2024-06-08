@@ -1,16 +1,29 @@
-VERSION = '2024.05.01'
+VERSION = '2024.06.06'
 description = '''<i>
-- minor updates and bugfixes
-- updates of libs 
-- edit config file group - remove '@' simbol
-- added showing version of used libs
+- added processing of requests in multi-threaded mode, faster downloading and sending videos
+- removed unused side menu items 
+- updating used libraries
+- updating a database record (date and time)
+- added cache clearing every 24 hours
+- added bot uptime
+- minor optimization after selecting downloadable content
 </i>'''
+
+
+# VERSION = '2024.05.01'
+# description = '''<i>
+# - minor updates and bugfixes
+# - updates of libs 
+# - edit config file group - remove '@' simbol
+# - added showing version of used libs
+# </i>'''
 
 
 # VERSION = '2024.04.27'
 # description = '''<i>
 # - added voice downloading option
 # </i>'''
+
 
 # VERSION = '2024.04.20'
 # description = '''<i>
@@ -19,6 +32,7 @@ description = '''<i>
 # - edit creator script
 # </i>'''
 
+
 # VERSION = '2024.04.15'
 # description = '''<i>
 # - edit language
@@ -26,10 +40,12 @@ description = '''<i>
 # - minor improvements
 # </i>'''
 
+
 # VERSION = '2024.04.11'
 # description = '''<i>
 # - video downloading improvement
 # </i>'''
+
 
 # VERSION = '2024.04.08'
 # description = '''<i>
@@ -39,6 +55,7 @@ description = '''<i>
 # - increase in attempts to download videos from Facebook from 10 to 15 (var done == 15)
 # </i>'''
 
+
 # VERSION = '2024.04.03'
 # description = '''
 # - added description of version changes
@@ -46,6 +63,7 @@ description = '''<i>
 # - removed easter egg called "kisan kisan"
 # - edit group sending bug
 # '''
+
 
 # VERSION = '2024.04.01'
 # description = ' - fixed bug when downloading reels from facebook'

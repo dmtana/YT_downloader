@@ -1,38 +1,34 @@
-from config.config import ADMINS_ID, MODERATORS_ID
-from config.config import START_TEXT
-from config.config import GROUP1, GROUP2, GROUP3
+from config.config import ADMINS_ID, MODERATORS_ID, TOKEN, START_TEXT, GROUP1, GROUP2, GROUP3
 
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.chat_action import ChatActionSender
-
 from aiogram import Bot, Dispatcher, F
 
 from data_set import SelecMediaDownloader, TemporaryCache, FeedbackForm
 from key_gen import generate_random_key
 from side_menu import set_commands
 
-from version import VERSION, description
-
 from database.database import write_to_db, start_db
+from uptime import Uptime
 
-from get_version_new import get_version_new
-
+import asyncio
+import bot_sender
+import threading
 import helper
 import keyboards
 
-my_cache = TemporaryCache()
+uptime = Uptime()
+cache = TemporaryCache()
 
 # HANDLER REGISTRATION 
 async def handlers_reg(dp: Dispatcher):
 
     # command handler registration 
     dp.message.register(get_start, Command(commands=['start']))
-    dp.message.register(get_help, Command(commands=['help']))
     dp.message.register(get_feedback, Command(commands=['feedback']))
     dp.message.register(settings, Command(commands=['settings']))
-    dp.message.register(set_language, Command(commands=['languge']))
     dp.message.register(get_version, Command(commands=['version']))
 
     # FEEDBACK 
@@ -60,13 +56,8 @@ async def handlers_reg(dp: Dispatcher):
 Side menu command handlers
 '''
 # START COMMAND HANDLER
-async def get_start(message: Message, bot: Bot):
+async def get_start(message: Message):
     await message.answer(f'Hello there, <b>{message.from_user.full_name}</b>. {START_TEXT["EN"]}')
-
-# HELP COMMAND HANDLER
-async def get_help(message: Message, bot: Bot):
-    await message.answer('Помощи пока нет, но вы держитесь =)\n'+
-                         'We working on it =)')
     
 # FEEDBACK COMMAND HANDLER
 async def get_feedback(message: Message, state: FSMContext):
@@ -77,21 +68,16 @@ async def get_feedback(message: Message, state: FSMContext):
     print('состояние установлено')
 
 # SETTING COMMAND HANDLER
-async def settings(message: Message, bot: Bot):
+async def settings(message: Message):
     await message.answer(f'Settings is coming soon\nWe working on it')
 
-# LANGUAGE COMMAND HANDLER
-async def set_language(message: Message, bot: Bot):
-    await message.answer(f'Languages is coming soon\nWe working on it')
-
 # VERSION COMMAND HANDLER
-async def get_version(message: Message, bot: Bot):
-    ver_of_lib = ''
+async def get_version(message: Message):
+    chat_id = message.chat.id
     try:
-        ver_of_lib = await get_version_new()
+        threading.Thread(target=lambda: asyncio.run(bot_sender.send_version(TOKEN=TOKEN, CHAT_ID=chat_id, uptime=uptime))).start()
     except Exception as e:
         print(e)    
-    await message.answer(f'Version: <b>{VERSION}</b>{description}\n{ver_of_lib}')
 
 
 #################################
@@ -115,7 +101,7 @@ async def text_handler(message: Message, bot: Bot):
                 message_info = await message.reply("<b>DOWNLOAD</b>", 
                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
                 
-                await my_cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
+                await cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
 
             except Exception as e: 
                 print(f"ERROR in text_handler - {str(e)}")
@@ -140,42 +126,36 @@ async def text_handler(message: Message, bot: Bot):
 
 # DOWNLOAD AND SEND VIDEO
 async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader):
-    arr = await my_cache.get_from_cache(callback_data.key) # kostyl
+    arr = await cache.get_from_cache(callback_data.key) # kostyl
     message = arr[0]
+    await bot.delete_message(message.chat.id, message.message_id)
     args = arr[1]
     user_name = arr[2]
-    await my_cache.remove_from_cache(callback_data.key) # kostyl
+    await cache.remove_from_cache(callback_data.key) # kostyl
     ############################### testing
     try:
         await write_to_db(information=args['link'], id=str(message.chat.id), media_type='video', user_name=user_name, bot_name=message.from_user.full_name)
     except Exception as e:
         print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
-    await bot.delete_message(message.chat.id, message.message_id)
-    ms = None
-    async with ChatActionSender.upload_video(chat_id=call.message.chat.id, bot=bot):
-        try:
-            ms = await call.message.answer(f'Downloading...')
-            file_id, err_msg = await helper.download_media(args['link'], is_video=True)
-            await helper.send_video(message=message, bot=bot, file_id=file_id)
-            if err_msg:
-                await call.message.answer(err_msg)
-        except Exception as e:
-            await call.message.answer('ERROR INPUT, WRONG LINK')
-            print('ERROR VIDEO - ', e)
-        finally: 
-            if ms:
-                await bot.delete_message(message.chat.id, ms.message_id)     
-
+    key = generate_random_key()
+    threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
+                                                                                    URL=args['link'],
+                                                                                    CHAT_ID=message.chat.id,
+                                                                                    key=key,
+                                                                                    ))).start()
+  
 # DOWNLOAD AND SEND AUDIO
 async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group='', voice=False):
-    media_type='audio'
-    download_and_send_audio_status = 0
-    arr = await my_cache.get_from_cache(callback_data.key) # kostyl
+    arr = await cache.get_from_cache(callback_data.key) # kostyl
     message = arr[0]
+    await bot.delete_message(message.chat.id, message.message_id)
     args = arr[1]
     user_name = arr[2]
-    await my_cache.remove_from_cache(callback_data.key) # kostyl
+    await cache.remove_from_cache(callback_data.key) # kostyl
+
+    media_type='audio'
+    download_and_send_audio_status = 0
     ms = None
     ############################## testing
     try:
@@ -185,7 +165,6 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     except Exception as e:
         print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
-    await bot.delete_message(message.chat.id, message.message_id)
     async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
         try:    
             ms = await call.message.answer('Downloading...')

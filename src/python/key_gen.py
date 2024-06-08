@@ -2,14 +2,11 @@ import hashlib
 import secrets
 
 def generate_random_key():
-    # Генерация случайных байтов (можно указать нужную длину)
-    random_bytes = secrets.token_bytes(32)  # 32 байта для SHA-512
-
-    # Вычисление SHA-512 хеша от случайных байтов
-    sha512_hash = hashlib.sha512(random_bytes).hexdigest()
-
+    # Generate random bytes (you can specify the desired length)
+    random_bytes = secrets.token_bytes(32)  # 32 bytes for SHA-512
+    sha512_hash = hashlib.sha512(random_bytes).hexdigest()     # Calculating SHA-512 hash from random bytes
     return sha512_hash
 
 # random_key = generate_random_key()
-# print("Сгенерированный случайный ключ SHA-512:", random_key)
-# print("Сгенерированный случайный ключ SHA-512:", random_key[0:50:])
+# print("Generated random key SHA-512:", random_key)
+# print("Generated random key SHA-512:", random_key[0:50:])

@@ -1,7 +1,8 @@
 import asyncio
-import helper
+import threading
 import handlers
 import logging
+import cache_maestro
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.bot import DefaultBotProperties
@@ -20,15 +21,13 @@ async def start():
 
     # handler registration
     await handlers.handlers_reg(dp)
-  
-    # clear cache more than 3 days default
-    try:
-        await helper.create_folders()
-        await helper.delete_file()
-        await helper.delete_file(1, 'photo/Thumbnails')
-        await helper.delete_file(1, 'video')
+   
+    try:  # create folders
+        await cache_maestro.create_folders()
+        # clear cache more than 3 days default every 24h
+        threading.Thread(target=lambda: asyncio.run(cache_maestro.clear_cache())).start()
     except Exception as e:
-        print(f'[ERROR CLEANING CACHE] - {str(e)}')
+        print('[X][ERROR creating/deleting in main bot.py]', e)
 
     # BOT STARTED
     try:
