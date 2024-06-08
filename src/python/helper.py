@@ -155,7 +155,9 @@ async def send_voice(message, bot, file_id, group=''):
             print('[bot][X][DURATION GETING ERROR FOR VOICE]')
     print('[bot][+][START SENDING VOICE]')
     try:
-        cmd = str(f'ffmpeg -i "{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3" -c:a libopus -b:a 32k -vbr on -compression_level 10 -frame_duration 60 -application voip "{curren_path}media_from_yt/{str_buf_fix(file_name)}.opus"')
+        cmd = str(f'ffmpeg -i "{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3" '+
+                  f'-c:a libopus -b:a 32k -vbr on -compression_level 10 '+
+                  f'-frame_duration 60 -application voip "{curren_path}media_from_yt/{str_buf_fix(file_name)}.opus"')
         process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = await process.communicate()
         print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
@@ -171,7 +173,8 @@ async def send_voice(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERROR AUDIO SENDING]', e)
             if 'VOICE_MESSAGES_FORBIDDEN' in str(e):
-                await bot.send_message(chat_id=message.chat.id, text=f"This users privacy settings forbid you from sending voice messages. {str(e).replace(TOKEN, '')}")
+                await bot.send_message(chat_id=message.chat.id, 
+                                       text=f"This users privacy settings forbid you from sending voice messages. {str(e).replace(TOKEN, '')}")
             try:
                 await bot.send_document(message.chat.id, audio)
             except Exception as e:
@@ -196,7 +199,8 @@ async def send_voice(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
+        await bot.send_message(message.chat.id, 
+                               f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status   
 
@@ -255,7 +259,8 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
+        await bot.send_message(message.chat.id, 
+                               f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
 
