@@ -7,6 +7,7 @@ description = '''<i>
 - added cache clearing every 24 hours
 - added bot uptime
 - minor optimization after selecting downloadable content
+- fix size for audio thumbnail
 </i>'''
 
 
