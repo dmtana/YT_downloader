@@ -138,11 +138,9 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     except Exception as e:
         print('[X][ERROR DATABASE CONNECTION]', e)
     ############################### testing
-    key = generate_random_key()
     threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
                                                                                     URL=args['link'],
                                                                                     CHAT_ID=message.chat.id,
-                                                                                    key=key,
                                                                                     ))).start()
   
 # DOWNLOAD AND SEND AUDIO
