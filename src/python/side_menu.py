@@ -10,20 +10,12 @@ async def set_commands(bot: Bot):
             description="Bot start"
         ),
         BotCommand(
-            command='help', 
-            description="How to use"
-        ),
-        BotCommand(
             command='feedback',
             description='Leave feedback to the author'
         ),
         BotCommand(
             command='settings',
             description='Settings is coming soon'
-        ),
-        BotCommand(
-            command='languge',
-            description='Languages is coming soon'
         ),
         BotCommand(
             command='version',
