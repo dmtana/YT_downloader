@@ -340,14 +340,19 @@ async def download_media(URL, is_video=False):
                 print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
             done += 1
     else:
-        link_thumbnail = some_var['thumbnails'][5]['url'] # link_thumbnail is link to image of this sound
+        link_thumbnail = some_var['thumbnail'] # link_thumbnail is link to image of this sound
         print("[bot][+][DOWNLOADING AUDIO]")
         try:
             # DOWNLOAD AND SAVE IMAGE
             resource = urllib.request.urlopen(link_thumbnail)
             with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
                 file.write(resource.read())
-            print("[bot][+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]")    
+            print("[bot][+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]") 
+            try:
+                await crop_to_square(f'{curren_path}photo/Thumbnails/{file_id}.jpeg',
+                                     f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
+            except Exception as e:
+                print(e)   
         except Exception as e:
             print("[bot][X][ERR DOWNLOAD IMAGE]", e)
         try:
@@ -391,7 +396,18 @@ async def compress_image(input_path, output_path, target_size_kb = 200):
                 if quality < 10:
                     break
     except Exception as e:
-        print('[helper][X][CONVERT ERROR]', e)                     
+        print('[helper][X][CONVERT ERROR]', e) 
+
+async def crop_to_square(image_path, output_path):
+    with Image.open(image_path) as img:
+        width, height = img.size
+        new_side = min(width, height)
+        left = (width - new_side) / 2
+        top = (height - new_side) / 2
+        right = (width + new_side) / 2
+        bottom = (height + new_side) / 2
+        img_cropped = img.crop((left, top, right, bottom))
+        img_cropped.save(output_path)
 
 async def show_cat(message: Message, bot: Bot):
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
