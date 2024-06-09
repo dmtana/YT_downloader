@@ -41,8 +41,8 @@ async def save_json(a, j): #this method save json info
         print("[bot][-][ERROR JSON SAVE]", e)
 
 # commands for download video
-# @deprecated(reason="added video choice") 
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
+commands_audio = ['-audio', 'audio', '-a', 'аудио', '-а', '-аудио', 'a', 'а']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
@@ -57,7 +57,6 @@ def get_args(m : str):
     # trim and delete spaces between words
     list_str = " ".join(m.split()).split(" ")
     commands['link'] = list_str[0].replace('&feature=share', '')
-    # @deprecated(reason="added video choice") 
     if len(list_str) > 1:
         # for chekinig #
         print('[Video command]', '[',list_str[1], ']')

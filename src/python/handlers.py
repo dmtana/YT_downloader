@@ -95,17 +95,28 @@ async def text_handler(message: Message, bot: Bot):
         elif "https://" in args['link']:
             # message_info need for delete message after sending file
             try:
-                key = generate_random_key()
-                # 45-44 from 64 bytes for call_back data - 19 left 
-                key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
-                message_info = await message.reply("<b>DOWNLOAD</b>", 
-                                               reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
-                
-                await cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
-
+                if args['video']:
+                    try: # temporary solution
+                        bot_name = await bot.get_me()
+                        await write_to_db(information=args['link'], 
+                                          id=str(message.chat.id), 
+                                          media_type='video', 
+                                          user_name=message.from_user.full_name, 
+                                          bot_name=bot_name.full_name)
+                    except Exception as e:
+                        print('[X][ERROR DATABASE CONNECTION]', e)
+                    threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
+                                                                                    URL=args['link'],
+                                                                                    CHAT_ID=message.chat.id,
+                                                                                    ))).start()
+                else:
+                    key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
+                    key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
+                    message_info = await message.reply("<b>DOWNLOAD</b>", 
+                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
+                    await cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
             except Exception as e: 
                 print(f"ERROR in text_handler - {str(e)}")
-          
         elif message.text.lower() in helper.cat:
             await helper.show_cat(message, bot)
             print("мяу", end=" ")
