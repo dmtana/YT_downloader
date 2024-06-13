@@ -19,9 +19,9 @@ class Uptime:
 
         if days != 0:
             uptime_str += f"{days}d "
-        elif hours != 0:
+        if hours != 0:
             uptime_str += f"{hours}h "
-        elif minutes != 0:       
+        if minutes != 0:       
             uptime_str += f"{minutes}m "
         uptime_str += f"{seconds}s"
         

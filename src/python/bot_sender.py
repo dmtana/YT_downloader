@@ -6,14 +6,17 @@ from aiogram.utils.chat_action import ChatActionSender
 from aiogram import Bot
 from aiogram.client.bot import DefaultBotProperties
 
+from database.database import write_to_db
 from get_version_new import get_version_new
 
 
-async def download_and_send_video(TOKEN, URL, CHAT_ID, parse_mode='HTML'):
+async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HTML'):
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
+    bot_name = ''
     async with ChatActionSender.upload_video(chat_id=CHAT_ID, bot=bot):
         try:
             msg = await bot.send_message(chat_id=CHAT_ID, text='Downloading...')
+            bot_name = str(msg.from_user.first_name)
             file_id, error_message = await helper.download_media(URL, is_video=True)
             await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
         except Exception as e:
@@ -26,8 +29,12 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, parse_mode='HTML'):
             try:
                 await bot.delete_message(CHAT_ID, msg.message_id)
             except Exception as e:
-                print(e)        
+                print(e)
             await bot.session.close()   
+        try:
+            await write_to_db(information=URL, id=str(CHAT_ID), media_type='video', user_name=user_name, bot_name=bot_name)
+        except Exception as e:
+            print('[X][ERROR DATABASE CONNECTION][bot_sender]', e)
 
 
 async def send_version(TOKEN, CHAT_ID, uptime, parse_mode='HTML'):

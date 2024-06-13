@@ -7,7 +7,6 @@ import urllib.request
 import json
 import random
 import datetime
-import time
 import cv2
 import random
 
@@ -43,6 +42,7 @@ async def save_json(a, j): #this method save json info
 # commands for download video
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 commands_audio = ['-audio', 'audio', '-a', 'аудио', '-а', '-аудио', 'a', 'а']
+coomands_delete_message = ['-del', 'del', '-d', 'd', 'уд', '-уд', '-д', 'д']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
@@ -53,22 +53,24 @@ def str_buf_fix(s):
 
 def get_args(m : str):
     # dict pasrsing
-    commands = {"link": '', "video": False, "group": ''}
+    commands = {"link": '', "video": False, "group": '', "del_msg": False, "audio": True}
     # trim and delete spaces between words
-    list_str = " ".join(m.split()).split(" ")
-    commands['link'] = list_str[0].replace('&feature=share', '')
+    list_str = m.split()
+    # list_str = " ".join(m.split()).split(" ")
+    print(list_str)
+    try:
+        link = next((string for string in list_str if 'https://' in string), None)
+        commands['link'] = link.replace('&feature=share', '')
+    except Exception as e:
+        commands['link'] = list_str[0].replace('&feature=share', '')
+        print(e)
     if len(list_str) > 1:
-        # for chekinig #
-        print('[Video command]', '[',list_str[1], ']')
-        if list_str[1].lower() in commands_video:
+        if any(element in list_str for element in commands_audio):
+            commands['audio'] = True
+        if any(element in list_str for element in commands_video):
             commands['video'] = True
-        else:
-            commands['video'] = False
-            print("INVALID VIDEO COMMAND")
-    # @deprecated(reason="added group choice")         
-    if len(list_str) > 2:
-        commands['group'] = list_str[2]
-    print('[bot][+][ARG]')    
+        if any(element in list_str for element in coomands_delete_message):
+            commands['del_msg'] = True
     return commands
 
 async def send_video(message, bot, file_id='', group=''):
@@ -271,17 +273,11 @@ async def download_media(URL, is_video=False):
     done = 0
     while done < 15: # kostyl for facebook reels etc
         try:
-            with yt_dlp.YoutubeDL() as ydl:
-                print('yt-dlp 1')
-                some_var = ydl.sanitize_info(ydl.extract_info(URL, download=False))
-                # WE GET TITLE AND ID FROM LINK
-                file_name = some_var['title']
-                file_id = some_var['id']
-                if await save_json(file_id, some_var):
-                    done = 15
-                print('yt-dlp 2')    
+            file_id, file_name, some_var = await get_json(URL)
+            if await save_json(file_id, some_var):
+                done = 15
         except Exception as e:
-                print("[bot][X][CAN'T GET JSON FROM LINK]", e)
+            print("[bot][X][CAN'T GET JSON FROM LINK]", e)
         done += 1
     if is_video:
         done = 0
@@ -308,8 +304,8 @@ async def download_media(URL, is_video=False):
                 stdout, stderr = await process.communicate()
                 print(cmd)
                 print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
-                print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
-                      f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+                # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
                 if 'already been downloaded' in stdout.decode("utf-8"):
                     done = 15
                 try:
@@ -375,8 +371,8 @@ async def download_media(URL, is_video=False):
             )
             stdout, stderr = await process.communicate()
             print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
-            print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
-                  f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+            # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+            #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
             if 'File is larger than max-filesize' in str(stdout):
                 error_message = str(f'<pre>File is larger than 50 Mb\n'+
                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -402,6 +398,12 @@ async def compress_image(input_path, output_path, target_size_kb = 200):
     except Exception as e:
         print('[helper][X][CONVERT ERROR]', e) 
 
+async def download_video():
+    pass
+
+async def download_audio():
+    pass
+
 async def crop_to_square(image_path, output_path):
     with Image.open(image_path) as img:
         width, height = img.size
@@ -412,6 +414,29 @@ async def crop_to_square(image_path, output_path):
         bottom = (height + new_side) / 2
         img_cropped = img.crop((left, top, right, bottom))
         img_cropped.save(output_path)
+
+async def get_json(URL):
+    cmd = str(f'yt-dlp -J {URL}')
+    process = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    print(cmd)
+    # print(f'{stdout.decode("utf-8")}')
+    # print(f'{stderr.decode("utf-8")}')
+    id = None
+    title = None
+    ansver = None
+    try:
+        ansver = json.loads(stdout)
+        id = ansver['id']
+        title = ansver['title']
+    except Exception as e: 
+        raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
+    return id, title, ansver
+
 
 async def show_cat(message: Message, bot: Bot):
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
