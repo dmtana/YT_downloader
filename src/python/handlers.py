@@ -95,20 +95,16 @@ async def text_handler(message: Message, bot: Bot):
         elif "https://" in args['link']:
             # message_info need for delete message after sending file
             try:
-                if args['video']:
-                    try: # temporary solution
-                        bot_name = await bot.get_me()
-                        await write_to_db(information=args['link'], 
-                                          id=str(message.chat.id), 
-                                          media_type='video', 
-                                          user_name=message.from_user.full_name, 
-                                          bot_name=bot_name.full_name)
+                if args['del_msg']:
+                    try:
+                        await bot.delete_message(message.chat.id, message.message_id)
                     except Exception as e:
-                        print('[X][ERROR DATABASE CONNECTION]', e)
+                        print(e)
+                if args['video']:
                     threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
                                                                                     URL=args['link'],
                                                                                     CHAT_ID=message.chat.id,
-                                                                                    ))).start()
+                                                                                    user_name=message.from_user.full_name))).start()
                 else:
                     key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
                     key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
@@ -143,16 +139,10 @@ async def download_and_send_video(call: CallbackQuery, bot: Bot, callback_data: 
     args = arr[1]
     user_name = arr[2]
     await cache.remove_from_cache(callback_data.key) # kostyl
-    ############################### testing
-    try:
-        await write_to_db(information=args['link'], id=str(message.chat.id), media_type='video', user_name=user_name, bot_name=message.from_user.full_name)
-    except Exception as e:
-        print('[X][ERROR DATABASE CONNECTION]', e)
-    ############################### testing
     threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
                                                                                     URL=args['link'],
                                                                                     CHAT_ID=message.chat.id,
-                                                                                    ))).start()
+                                                                                    user_name=user_name))).start()
   
 # DOWNLOAD AND SEND AUDIO
 async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group='', voice=False):

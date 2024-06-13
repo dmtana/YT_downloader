@@ -1,15 +1,25 @@
-VERSION = '2024.06.08'
+
+
+VERSION = '2024.06.14'
 description = '''<i>
-- added processing of requests in multi-threaded mode, faster downloading and sending videos
-- removed unused side menu items 
-- updating used libraries
-- updating a database record (date and time)
-- added cache clearing every 24 hours
-- added bot uptime
-- minor optimization after selecting downloadable content
-- fix size for audio thumbnail
-- fix tiktok bug
+- added inline command (video, and deleting msg)
+- fixed showing uptime
+- and minor updates
 </i>'''
+
+
+# VERSION = '2024.06.08'
+# description = '''<i>
+# - added processing of requests in multi-threaded mode, faster downloading and sending videos
+# - removed unused side menu items 
+# - updating used libraries
+# - updating a database record (date and time)
+# - added cache clearing every 24 hours
+# - added bot uptime
+# - minor optimization after selecting downloadable content
+# - fix size for audio thumbnail
+# - fix tiktok bug
+# </i>'''
 
 
 # VERSION = '2024.05.01'
