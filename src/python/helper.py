@@ -51,19 +51,25 @@ def str_buf_fix(s):
     # s.translate(str.maketrans("$", "S"))
     return s
 
-def get_args(m : str):
+def get_args(msg : str) -> dict:
+    """
+    args:
+    - geting string and parsing it to commands dict
+
+    returns:
+    - commands dict   
+    """
     # dict pasrsing
-    commands = {"link": '', "video": False, "group": '', "del_msg": False, "audio": True}
+    commands = {"link": '', "video": False, "group": '', "del_msg": False, "audio": False}
     # trim and delete spaces between words
-    list_str = m.split()
-    # list_str = " ".join(m.split()).split(" ")
+    list_str = msg.split()
     print(list_str)
     try:
         link = next((string for string in list_str if 'https://' in string), None)
         commands['link'] = link.replace('&feature=share', '')
     except Exception as e:
         commands['link'] = list_str[0].replace('&feature=share', '')
-        print(e)
+        print('[X][Link geting error]', e, commands['link'])
     if len(list_str) > 1:
         if any(element in list_str for element in commands_audio):
             commands['audio'] = True
@@ -71,6 +77,8 @@ def get_args(m : str):
             commands['video'] = True
         if any(element in list_str for element in coomands_delete_message):
             commands['del_msg'] = True
+        if any(string for string in list_str if 'group=' in string):
+            commands['group'] = next((string for string in list_str if 'group=' in string), None).replace('group=', '')
     return commands
 
 async def send_video(message, bot, file_id='', group=''):
@@ -92,7 +100,7 @@ async def send_video(message, bot, file_id='', group=''):
             print('[bot][-][ERROR WIDTH AND HEIGHT]')
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
-            print('[bot][+][THUMB]', end='')
+            print('[bot][+][THUMB][in send_video()]', end='')
             try:
                 if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200: # tg limit for thumbnail
                     await compress_image(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
@@ -203,9 +211,9 @@ async def send_voice(message, bot, file_id, group=''):
         await bot.send_message(message.chat.id, 
                                f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
         print("[bot][X][ERROR SENDING]", e)
-    return send_audio_status   
+    return send_audio_status
 
-async def send_audio(message, bot, file_id, group=''):
+async def send_audio(chat_id, bot, file_id, group='', voice=False):
     send_audio_status = 0
     file_name = ""
     duration = None
@@ -223,7 +231,7 @@ async def send_audio(message, bot, file_id, group=''):
         audio = FSInputFile(audio_file)
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
-            print('[+][thumbnail][send_audio]')
+            print('[bot][+][thumbnail][in send_audio()]')
             try:
                 if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200: # tg limit for thumbnail
                     await compress_image(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
@@ -232,27 +240,29 @@ async def send_audio(message, bot, file_id, group=''):
                 print('[helper][X][ERROR CONVERTER limit for thumbnail]', e)
         except Exception as e:
             print('[bot][X][TRHUMBNAIL AUDIO MESSAGE ERROR]')
-        try:
-            await bot.send_audio(message.chat.id, audio=audio, thumbnail=thumbnail, duration=duration)
-        except Exception as e:
-            print('[bot][X][ERROR AUDIO SENDING]', e)
-            try:
-                await bot.send_document(message.chat.id, audio)
-            except Exception as e:
-                print("[bot][X][ERROR SENDING AUDIO AS DOCUMENT]", e)
         if group != '':
             try:
                 # important thing is @ symbol for groups. I moved this to config file
                 await bot.send_audio(chat_id=f'{group}', audio=audio, thumbnail=thumbnail, duration=duration)
+                await bot.send_message(chat_id=chat_id, text=f'<b>Sent in {group} +</b>') 
                 send_audio_status = 6
             except Exception as e:
                 print('[bot][X][ERROR GROUP AUDIO SENDING]', e)
-                await bot.send_message(chat_id=message.chat.id, text=str(e).replace(TOKEN, ''))
+                await bot.send_message(chat_id=chat_id, text=str(e).replace(TOKEN, ''))
                 print('[Ошибка отправки в группу!]', e)
                 try:
                     await bot.send_document(chat_id=f'{group}', document=audio, thumbnail=thumbnail)
+                    await bot.send_message(chat_id=chat_id, text=f'<b>Sent in {group} +</b>') 
                 except Exception as e:
                     print('[bot][X][ERROR GROUP AUDIO SENDING AS DOCUMENT]', e)
+        try:
+            await bot.send_audio(chat_id, audio=audio, thumbnail=thumbnail, duration=duration)
+        except Exception as e:
+            print('[bot][X][ERROR AUDIO SENDING]', e)
+            try:
+                await bot.send_document(chat_id, audio)
+            except Exception as e:
+                print("[bot][X][ERROR SENDING AUDIO AS DOCUMENT]", e)
         try:
             if del_file:
                 os.remove(f'{curren_path}media_from_yt/{str_buf_fix(file_name)}.mp3')
@@ -260,7 +270,7 @@ async def send_audio(message, bot, file_id, group=''):
         except Exception as e:
             print('[bot][X][ERR OF FILE DELETE]')
     except Exception as e:
-        await bot.send_message(message.chat.id, 
+        await bot.send_message(chat_id, 
                                f"ERROR SENDING\nWE ARE WORKING ON THIS PROBLEM. SORRY. =(\nTRY AGAIN LATER\n{str(e).replace(TOKEN, '')}")
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
