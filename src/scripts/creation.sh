@@ -2,6 +2,8 @@
 
 TOKENS=()
 
+database=true
+
 # DATABASE CONFIG
 host='localhost'
 user='admin'
@@ -23,6 +25,11 @@ IFS=',' read -ra TOKENS <<< "$TOKEN"
 
 echo "Run bot after install? Y/n"
 read answer
+
+# TODO edit config creating separately database docker-compose file
+if $database ; then
+    echo "[+][database creating]"
+fi    
 
 echo "Use default network:
 1. Default (will block your host ports [$port],[$port_pgadmin] with virtual network ports) 

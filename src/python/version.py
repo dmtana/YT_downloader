@@ -1,11 +1,17 @@
-
-
-VERSION = '2024.06.14'
+VERSION = '2024.06.20'
 description = '''<i>
-- added inline command (video, and deleting msg)
-- fixed showing uptime
-- and minor updates
+- added sending audio in multithreading 
+- removed voice selection (temporary, later will be added in setting as an options)
+- minor improvements
 </i>'''
+
+
+# VERSION = '2024.06.14'
+# description = '''<i>
+# - added inline command (video, and deleting msg)
+# - fixed showing uptime
+# - and minor updates
+# </i>'''
 
 
 # VERSION = '2024.06.08'

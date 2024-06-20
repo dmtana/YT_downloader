@@ -3,14 +3,13 @@ from config.config import ADMINS_ID, MODERATORS_ID, TOKEN, START_TEXT, GROUP1, G
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.chat_action import ChatActionSender
 from aiogram import Bot, Dispatcher, F
 
 from data_set import SelecMediaDownloader, TemporaryCache, FeedbackForm
 from key_gen import generate_random_key
 from side_menu import set_commands
 
-from database.database import write_to_db, start_db
+from database.database import start_db
 from uptime import Uptime
 
 import asyncio
@@ -40,7 +39,7 @@ async def handlers_reg(dp: Dispatcher):
     # SELECTORS MEDIA DOWNLOADER
     dp.callback_query.register(download_and_send_audio, SelecMediaDownloader.filter(F.media_type == 'audio'))
     dp.callback_query.register(download_and_send_video, SelecMediaDownloader.filter(F.media_type == 'video'))
-    dp.callback_query.register(download_and_send_voice, SelecMediaDownloader.filter(F.media_type == 'voice'))
+    # dp.callback_query.register(download_and_send_voice, SelecMediaDownloader.filter(F.media_type == 'voice'))
 
     # ADDITIONAL MEDIA HANDLER
     dp.callback_query.register(send_audio_to_group, SelecMediaDownloader.filter(F.media_type == 'music'))
@@ -84,7 +83,6 @@ async def get_version(message: Message):
 
 # TEXT HANDLER
 async def text_handler(message: Message, bot: Bot):
-
     message_info = None
     args = helper.get_args(message.text)
     print(message.text)
@@ -95,15 +93,19 @@ async def text_handler(message: Message, bot: Bot):
         elif "https://" in args['link']:
             # message_info need for delete message after sending file
             try:
-                if args['del_msg']:
-                    try:
-                        await bot.delete_message(message.chat.id, message.message_id)
-                    except Exception as e:
-                        print(e)
                 if args['video']:
                     threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
                                                                                     URL=args['link'],
                                                                                     CHAT_ID=message.chat.id,
+                                                                                    user_name=message.from_user.full_name))).start()
+                if args['audio']:
+                    group = ''
+                    if args['group'] != '':
+                        group = args['group']
+                    threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_audio(TOKEN=TOKEN,
+                                                                                    URL=args['link'],
+                                                                                    CHAT_ID=message.chat.id,
+                                                                                    group=group,
                                                                                     user_name=message.from_user.full_name))).start()
                 else:
                     key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
@@ -111,6 +113,11 @@ async def text_handler(message: Message, bot: Bot):
                     message_info = await message.reply("<b>DOWNLOAD</b>", 
                                                 reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
                     await cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
+                if args['del_msg']:
+                    try:
+                        await bot.delete_message(message.chat.id, message.message_id)
+                    except Exception as e:
+                        print(e)
             except Exception as e: 
                 print(f"ERROR in text_handler - {str(e)}")
         elif message.text.lower() in helper.cat:
@@ -152,37 +159,12 @@ async def download_and_send_audio(call: CallbackQuery, bot: Bot, callback_data: 
     args = arr[1]
     user_name = arr[2]
     await cache.remove_from_cache(callback_data.key) # kostyl
-
-    media_type='audio'
-    download_and_send_audio_status = 0
-    ms = None
-    ############################## testing
-    try:
-        if voice:
-            media_type='voice'
-        await write_to_db(information=args['link'], id=str(message.chat.id), media_type=media_type, user_name=user_name, bot_name=message.from_user.full_name)
-    except Exception as e:
-        print('[X][ERROR DATABASE CONNECTION]', e)
-    ############################### testing
-    async with ChatActionSender.upload_voice(chat_id=call.message.chat.id, bot=bot):
-        try:    
-            ms = await call.message.answer('Downloading...')
-            file_id, err_msg = await helper.download_media(args['link'])
-            if voice:
-                download_and_send_audio_status = await helper.send_voice(message=message, bot=bot, file_id=file_id, group=group)
-            else:    
-                download_and_send_audio_status = await helper.send_audio(message=message, bot=bot, file_id=file_id, group=group)
-            if err_msg:
-                await call.message.answer(err_msg)                
-        except Exception as e:
-            await call.message.answer('ERROR INPUT, WRONG LINK')
-            print('ERROR AUDIO - ', e)
-        finally:
-            print('[bot][+][DONE DOWNLOADING]')
-            if ms:
-                await bot.delete_message(message.chat.id, ms.message_id) 
-    if download_and_send_audio_status > 5:
-        await call.message.answer(f'<b>Sent in {group} +</b>')                       
+    threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_audio(TOKEN=TOKEN,
+                                                                                    URL=args['link'],
+                                                                                    CHAT_ID=message.chat.id,
+                                                                                    group=group,
+                                                                                    user_name=user_name))).start()
+                  
 
 # DOWNLOAD AND SEND VOICE
 async def download_and_send_voice(call: CallbackQuery, bot: Bot, callback_data: SelecMediaDownloader, group=''):
