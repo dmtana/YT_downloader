@@ -93,20 +93,21 @@ async def text_handler(message: Message, bot: Bot):
         elif "https://" in args['link']:
             # message_info need for delete message after sending file
             try:
-                if args['video']:
-                    threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
-                                                                                    URL=args['link'],
-                                                                                    CHAT_ID=message.chat.id,
-                                                                                    user_name=message.from_user.full_name))).start()
-                if args['audio']:
-                    group = ''
-                    if args['group'] != '':
-                        group = args['group']
-                    threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_audio(TOKEN=TOKEN,
-                                                                                    URL=args['link'],
-                                                                                    CHAT_ID=message.chat.id,
-                                                                                    group=group,
-                                                                                    user_name=message.from_user.full_name))).start()
+                if args['video'] or args['audio']:
+                    if args['video']:
+                        threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
+                                                                                        URL=args['link'],
+                                                                                        CHAT_ID=message.chat.id,
+                                                                                        user_name=message.from_user.full_name))).start()
+                    if args['audio']:
+                        group = ''
+                        if args['group'] != '':
+                            group = args['group']
+                        threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_audio(TOKEN=TOKEN,
+                                                                                        URL=args['link'],
+                                                                                        CHAT_ID=message.chat.id,
+                                                                                        group=group,
+                                                                                        user_name=message.from_user.full_name))).start()
                 else:
                     key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
                     key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
