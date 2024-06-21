@@ -95,12 +95,12 @@ async def send_video(message, bot, file_id='', group=''):
         try:
             width = int(json_info['width'])
             height = int(json_info['height'])
-            print('[bot][+][RES]', end='')
+            print('[bot][+][RESOLUTION VIDEO]')
         except Exception as e:
             print('[bot][-][ERROR WIDTH AND HEIGHT]')
         try:
             thumbnail = FSInputFile(f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
-            print('[bot][+][THUMB][in send_video()]', end='')
+            print('[bot][+][THUMBNAIL][in send_video()]')
             try:
                 if os.path.getsize(f'{curren_path}photo/Thumbnails/{file_id}.jpeg') / 1024 > 200: # tg limit for thumbnail
                     await compress_image(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', f'{curren_path}photo/Thumbnails/{file_id}_edited.jpeg')
@@ -112,12 +112,12 @@ async def send_video(message, bot, file_id='', group=''):
                         except Exception as e:
                             print(e)
             except Exception as e:
-                print('[helper][X][ERROR CONVERTER ON SEND_VIDEO]', e)
+                print('[bot][X][ERROR CONVERTER ON SEND_VIDEO]', e)
         except Exception as e:
             print('[bot][-][VIDEO THUMBNAIL ERROR]', e)
         try:
             duration = int(json_info['duration'])
-            print('[bot][+][DUR]', end='')   
+            print('[bot][+][DURATION VIDEO]')   
         except Exception as e:
             print('[bot][-][ERROR DURATION VIDEO INFO]')    
     print('[bot][+][START SENDING]')
@@ -293,7 +293,7 @@ async def download_media(URL, is_video=False):
         done = 0
         quality = ''
         while done < 15: # kostyl for facebook reels and tiktok
-            print("[bot][DOWNLOADING VIDEO]")
+            print("[bot][+][DOWNLOADING VIDEO]")
             try:
                 if 'tiktok' in URL:
                     quality = ''
@@ -312,11 +312,13 @@ async def download_media(URL, is_video=False):
                     stderr=subprocess.PIPE
                 )
                 stdout, stderr = await process.communicate()
-                print(cmd)
+                #print(cmd)
                 print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
                 # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
                 #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
                 if 'already been downloaded' in stdout.decode("utf-8"):
+                    done = 15
+                if stderr.decode("utf-8") == '':
                     done = 15
                 try:
                     video_path = f'{curren_path}video/{str_buf_fix(file_id)}.mp4'
