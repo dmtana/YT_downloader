@@ -44,6 +44,7 @@ async def download_and_send_audio(TOKEN, URL, CHAT_ID, user_name, group='', voic
     async with ChatActionSender.upload_voice(chat_id=CHAT_ID, bot=bot):
         try:    
             msg = await bot.send_message(chat_id=CHAT_ID, text='Downloading...')
+            bot_name = str(msg.from_user.first_name)
             file_id, error_message = await helper.download_media(URL)
             await helper.send_audio(chat_id=CHAT_ID, bot=bot, file_id=file_id, group=group)
             if error_message:
