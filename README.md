@@ -1,6 +1,6 @@
 # YT_downloader
 
-This is simple telegram bot for download music and small video (up to 50 Mb) from YouTube, Instagram, Tik-Tok, Facebook etc. 
+This is simple telegram bot for download music and video (up to 50 Mb) from YouTube, Instagram, Tik-Tok, Facebook etc. 
 
 Based on <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> library.
 
