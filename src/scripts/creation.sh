@@ -27,6 +27,7 @@ echo "Run bot after install? Y/n"
 read answer
 
 # TODO edit config creating separately database docker-compose file
+# for use external database
 if $database ; then
     echo "[+][database creating]"
 fi    
