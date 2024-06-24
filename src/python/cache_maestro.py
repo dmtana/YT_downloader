@@ -27,9 +27,10 @@ async def clear_cache(seconds=86400):
     '''
     while True:
         try:
-            await delete_file()
+            await delete_file(1, 'JSON_INFO_MP3')
             await delete_file(1, 'photo/Thumbnails')
             await delete_file(1, 'video')
+            await delete_file(1, 'media_from_yt')
         except Exception as e:
             print(f'[ERROR CLEANING CACHE] - {str(e)}')
         await asyncio.sleep(seconds)
