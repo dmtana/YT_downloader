@@ -8,6 +8,7 @@ from aiogram.client.bot import DefaultBotProperties
 
 from database.database import write_to_db
 from get_version_new import get_version_new
+from config.config import ADMINS_ID, MODERATORS_ID 
 
 
 async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HTML'):
@@ -74,7 +75,9 @@ async def send_version(TOKEN, CHAT_ID, uptime, parse_mode='HTML'):
     ver_of_lib = ''
     uptime_str = ''
     try:
-        ver_of_lib = await get_version_new()
+        if CHAT_ID in MODERATORS_ID or CHAT_ID in ADMINS_ID:
+            # or CHAT_ID in ADMINS_ID
+            ver_of_lib = '\n'+await get_version_new()+'\n'
         uptime_str = uptime.get_uptime()
     except Exception as e:
         print(e)
@@ -94,7 +97,7 @@ async def send_version(TOKEN, CHAT_ID, uptime, parse_mode='HTML'):
     except Exception as e:
         print(e)   
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
-    msg = f'Version: <b>{version.VERSION}</b> <i>{check_version}</i>\n{version.description}\n{ver_of_lib}\n\nUptime: {uptime_str}'
+    msg = f'Version: <b>{version.VERSION}</b> <i>{check_version}</i>\n{version.description}{ver_of_lib}\nUptime: {uptime_str}'
     try:
         await bot.send_message(chat_id=CHAT_ID, text=msg)
     except Exception as e:

@@ -1,6 +1,5 @@
 import asyncio
 import subprocess
-import yt_dlp
 import mp3_tag_editor
 import os
 import urllib.request
@@ -42,7 +41,7 @@ async def save_json(a, j): #this method save json info
 # commands for download video
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 commands_audio = ['-audio', 'audio', '-a', 'аудио', '-а', '-аудио', 'a', 'а']
-coomands_delete_message = ['-del', 'del', '-d', 'd', 'уд', '-уд', '-д', 'д']
+coomands_del_msg = ['-del', 'del', '-d', 'd', 'уд', '-уд', '-д', 'д']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
@@ -75,14 +74,13 @@ def get_args(msg : str) -> dict:
             commands['audio'] = True
         if any(element in list_str for element in commands_video):
             commands['video'] = True
-        if any(element in list_str for element in coomands_delete_message):
+        if any(element in list_str for element in coomands_del_msg):
             commands['del_msg'] = True
         if any(string for string in list_str if 'group=' in string):
             commands['group'] = next((string for string in list_str if 'group=' in string), None).replace('group=', '')
     return commands
 
 async def send_video(message, bot, file_id='', group=''):
-    #chat_id=message.chat.id, 
     chat_id = message
     duration = None
     file_name = ''
@@ -301,6 +299,7 @@ async def download_media(URL, is_video=False):
                     quality = '-f w' # worst
                 else: 
                     quality = '-f b' # best
+                    # quality = '-f ba+bv'
                 cmd = str(f'yt-dlp {quality} '+
                         f'--max-filesize 50M '+ # KOSTYL for tg
                         f'-P "{curren_path}video" '+

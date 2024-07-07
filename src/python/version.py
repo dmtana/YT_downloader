@@ -1,9 +1,16 @@
-VERSION = '2024.06.20'
+VERSION = '2024.07.08'
 description = '''<i>
-- added sending audio in multithreading 
-- removed voice selection (temporary, later will be added in setting as an options)
-- minor improvements
+- removed information of used libs for non admins
+- for admins added information about latest version of used libs 
+- updatet used libls
 </i>'''
+
+# VERSION = '2024.06.20'
+# description = '''<i>
+# - added sending audio in multithreading 
+# - removed voice selection (temporary, later will be added in setting as an options)
+# - minor improvements
+# </i>'''
 
 
 # VERSION = '2024.06.14'
