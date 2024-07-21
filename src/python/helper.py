@@ -41,7 +41,7 @@ async def save_json(a, j): #this method save json info
 # commands for download video
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 commands_audio = ['-audio', 'audio', '-a', 'аудио', '-а', '-аудио', 'a', 'а']
-coomands_del_msg = ['-del', 'del', '-d', 'd', 'уд', '-уд', '-д', 'д']
+coomands_del_msg = ['-del', 'del', '-d', 'd', 'уд', '-уд', 'у', '-у', '-д', 'д']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
