@@ -1,9 +1,17 @@
-VERSION = '2024.07.08'
+VERSION = '2024.07.23'
 description = '''<i>
-- removed information of used libs for non admins
-- for admins added information about latest version of used libs 
-- updatet used libls
+- updated libs
+- YouTube download fixes 
 </i>'''
+
+
+# VERSION = '2024.07.08'
+# description = '''<i>
+# - removed information of used libs for non admins
+# - for admins added information about latest version of used libs 
+# - updatet used libls
+# </i>'''
+
 
 # VERSION = '2024.06.20'
 # description = '''<i>
