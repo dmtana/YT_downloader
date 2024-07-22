@@ -242,7 +242,7 @@ async def send_audio(chat_id, bot, file_id, group='', voice=False):
             try:
                 # important thing is @ symbol for groups. I moved this to config file
                 await bot.send_audio(chat_id=f'{group}', audio=audio, thumbnail=thumbnail, duration=duration)
-                await bot.send_message(chat_id=chat_id, text=f'<b>Sent in {group} +</b>') 
+                await bot.send_message(chat_id=chat_id, text=f'<b>{file_name} sent in {group} +</b>') 
                 send_audio_status = 6
             except Exception as e:
                 print('[bot][X][ERROR GROUP AUDIO SENDING]', e)
@@ -273,7 +273,11 @@ async def send_audio(chat_id, bot, file_id, group='', voice=False):
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
 
-async def download_media(URL, is_video=False):
+async def download_media(URL, is_video=False, cookies_file=''):
+    """
+    TODO: make something with this issue
+       ERROR: [youtube] MWULA-mAlKs: Sign in to confirm you’re not a bot. This helps protect our community
+    """
     some_var = '' # JSON info from yt-dlp lib
     error_message = ''    
     file_name = ''
@@ -288,10 +292,11 @@ async def download_media(URL, is_video=False):
             print("[bot][X][CAN'T GET JSON FROM LINK]", e)
         done += 1
     if is_video:
+        cookies = ''
         done = 0
         quality = ''
+        print("[bot][+][DOWNLOADING VIDEO]")
         while done < 15: # kostyl for facebook reels and tiktok
-            print("[bot][+][DOWNLOADING VIDEO]")
             try:
                 if 'tiktok' in URL:
                     quality = ''
@@ -304,6 +309,7 @@ async def download_media(URL, is_video=False):
                         f'--max-filesize 50M '+ # KOSTYL for tg
                         f'-P "{curren_path}video" '+
                         f'-o "{str_buf_fix(file_id)}.mp4" '+
+                        f'{cookies} '+
                         f'"{URL}"')
                 process = await asyncio.create_subprocess_shell(
                     cmd,
@@ -312,13 +318,17 @@ async def download_media(URL, is_video=False):
                 )
                 stdout, stderr = await process.communicate()
                 #print(cmd)
-                print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
                 # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
                 #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
                 if 'already been downloaded' in stdout.decode("utf-8"):
                     done = 15
                 if stderr.decode("utf-8") == '':
                     done = 15
+                if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
+                    cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file 
+                    done += 1
+                    continue   
+                print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
                 try:
                     video_path = f'{curren_path}video/{str_buf_fix(file_id)}.mp4'
                     cap = cv2.VideoCapture(video_path)
@@ -338,9 +348,9 @@ async def download_media(URL, is_video=False):
                     # quality = 'w' # worst quality
                     done += 13
                     error_message = str(f'<pre>File is larger than 50 Mb\n'+
-                'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
-                'поэтому да, очень большие файлы пока не будут работать. Извини. '+
-                'Этот лимит может быть изменен в будущем.</pre>')
+                    'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
+                    'поэтому да, очень большие файлы пока не будут работать. Извини. '+
+                    'Этот лимит может быть изменен в будущем.</pre>')
                     try:
                         os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
                         print('[bot][+][VIDEO PART-FILE DELETED]')
@@ -351,48 +361,58 @@ async def download_media(URL, is_video=False):
                 print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
             done += 1
     else:
-        link_thumbnail = some_var['thumbnail'] # link_thumbnail is link to image of this sound
+        cookies = ''
+        done = 0
+        quality = ''
         print("[bot][+][DOWNLOADING AUDIO]")
-        try:
-            # DOWNLOAD AND SAVE IMAGE
-            resource = urllib.request.urlopen(link_thumbnail)
-            with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
-                file.write(resource.read())
-            print("[bot][+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]") 
+        while done < 2:
             try:
-                await crop_to_square(f'{curren_path}photo/Thumbnails/{file_id}.jpeg',
-                                     f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
+                cmd = str(f'yt-dlp -f ba '+
+                        f'-o "{str_buf_fix(file_name)}" '+
+                        f'--max-filesize 50.0M '+ # KOSTYL tg size 
+                        f'-x --audio-quality 0 '+
+                        f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
+                        f'-P {curren_path}media_from_yt '+ # path
+                        f'{cookies} '+ # bugfix for antibot system
+                        f'"{URL}"')  # link
+                # os.system(cmd)  
+                process = await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                stdout, stderr = await process.communicate()
+                # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+                if 'File is larger than max-filesize' in str(stdout):
+                    error_message = str(f'<pre>File is larger than 50 Mb\n'+
+                    'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
+                    'поэтому да, очень большие файлы пока не будут работать. Извини. '+
+                    'Этот лимит может быть изменен в будущем.</pre>')
+                    print(error_message)
+                if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
+                    cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
+                    done += 1
+                    continue
+                print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
             except Exception as e:
-                print(e)   
-        except Exception as e:
-            print("[bot][X][ERR DOWNLOAD IMAGE]", e)
-        try:
-            cmd = str(f'yt-dlp -f ba '+
-                      f'-o "{str_buf_fix(file_name)}" '+
-                      f'--max-filesize 50.0M '+ # KOSTYL tg size 
-                      f'-x --audio-quality 0 '+
-                      f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
-                      f'-P {curren_path}media_from_yt '+ # path
-                      f'"{URL}"')  # link
-            # os.system(cmd)  
-            process = await asyncio.create_subprocess_shell(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
-            print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
-            # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
-            #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
-            if 'File is larger than max-filesize' in str(stdout):
-                error_message = str(f'<pre>File is larger than 50 Mb\n'+
-               'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
-               'поэтому да, очень большие файлы пока не будут работать. Извини. '+
-               'Этот лимит может быть изменен в будущем.</pre>')
-                print(error_message)
-        except Exception as e:
-            print("[bot][X][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
-        await mp3_tag_editor.tag_edit(file_id)
+                print("[bot][X][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
+            try:
+                link_thumbnail = some_var['thumbnail'] # link_thumbnail is link to image of this sound
+                # DOWNLOAD AND SAVE IMAGE
+                resource = urllib.request.urlopen(link_thumbnail)
+                with open(f'{curren_path}photo/Thumbnails/{file_id}.jpeg', 'wb') as file:
+                    file.write(resource.read())
+                print("[bot][+][DOWNLOAD THUMBNAIL IMAGE COMPLETE]") 
+                try:
+                    await crop_to_square(f'{curren_path}photo/Thumbnails/{file_id}.jpeg',
+                                        f'{curren_path}photo/Thumbnails/{file_id}.jpeg')
+                except Exception as e:
+                    print(e)   
+            except Exception as e:
+                print("[bot][X][ERR DOWNLOAD IMAGE]", e)    
+            await mp3_tag_editor.tag_edit(file_id)
+            done += 1
     return file_id, error_message            
 
 async def compress_image(input_path, output_path, target_size_kb = 200):
@@ -426,26 +446,33 @@ async def crop_to_square(image_path, output_path):
         img_cropped = img.crop((left, top, right, bottom))
         img_cropped.save(output_path)
 
-async def get_json(URL):
-    cmd = str(f'yt-dlp -J {URL}')
-    process = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-    stdout, stderr = await process.communicate()
-    print(cmd)
-    # print(f'{stdout.decode("utf-8")}')
-    # print(f'{stderr.decode("utf-8")}')
-    id = None
-    title = None
-    ansver = None
-    try:
-        ansver = json.loads(stdout)
-        id = ansver['id']
-        title = ansver['title']
-    except Exception as e: 
-        raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
+async def get_json(URL, cookies_file=''):
+    cookies = ''
+    done = 0
+    while done < 2:
+        cmd = str(f'yt-dlp -J {cookies} "{URL}"')
+        process = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+        # print(cmd)
+        if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
+            cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
+            continue
+        # print(f'{stdout.decode("utf-8")}')
+        # print(f'{stderr.decode("utf-8")}')
+        id = None
+        title = None
+        ansver = None
+        try:
+            ansver = json.loads(stdout)
+            id = ansver['id']
+            title = ansver['title']
+        except Exception as e: 
+            raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
+        done += 1
     return id, title, ansver
 
 
