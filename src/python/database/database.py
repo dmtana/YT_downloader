@@ -15,7 +15,8 @@ async def start_db():
                     media_type text,
                     user_id text,
                     user_name text,
-                    bot_name text)
+                    bot_name text,
+                    result text)
             ''')
     except Exception as e:
         print('[DATABASE][X][creation table problem]', e)    
