@@ -26,7 +26,7 @@ async def start_db():
         except Exception as e:
             print('[DATABASE][X][ERROR CLOSING in start_db()]')
 
-async def write_to_db(information='', id='', media_type='', user_name='', bot_name='', table_name='received', adjustment=0):
+async def write_to_db(information='', id='', media_type='', user_name='', bot_name='', table_name='received', adjustment=0, result=''):
     if adjustment == 0:
         try:
             adjustment = INFO['time_adjustment']
@@ -37,8 +37,8 @@ async def write_to_db(information='', id='', media_type='', user_name='', bot_na
         dsn = f"postgresql://{DATABASE['user']}:{DATABASE['pass']}@{DATABASE['host']}:{DATABASE['port']}/{DATABASE['database']}"
         conn = await asyncpg.connect(dsn)
         await conn.execute(f'''
-                INSERT INTO {table_name}(date_and_time, information, media_type, user_id, user_name, bot_name) VALUES($1, $2, $3, $4, $5, $6)
-                ''', datetime.now() + timedelta(hours=adjustment), information, media_type, id, user_name, bot_name)
+                INSERT INTO {table_name}(date_and_time, information, media_type, user_id, user_name, bot_name, result) VALUES($1, $2, $3, $4, $5, $6, $7)
+                ''', datetime.now() + timedelta(hours=adjustment), information, media_type, id, user_name, bot_name, result)
     except Exception as e:
         print('[DATABASE][X][write to db error]\n', e)    
     finally:
