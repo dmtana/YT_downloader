@@ -460,6 +460,7 @@ async def get_json(URL, cookies_file=''):
         # print(cmd)
         if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
             cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
+            done += 2
             continue
         # print(f'{stdout.decode("utf-8")}')
         # print(f'{stderr.decode("utf-8")}')
@@ -472,7 +473,7 @@ async def get_json(URL, cookies_file=''):
             title = ansver['title']
         except Exception as e: 
             raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
-        done += 1
+        done += 2
     return id, title, ansver
 
 
