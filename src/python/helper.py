@@ -290,6 +290,7 @@ async def download_media(URL, is_video=False, cookies_file=''):
                 done = 15
         except Exception as e:
             print("[bot][X][CAN'T GET JSON FROM LINK]", e)
+            # raise Exception('YT-DLP ERROR')
         done += 1
     if is_video:
         cookies = ''
@@ -460,7 +461,7 @@ async def get_json(URL, cookies_file=''):
         # print(cmd)
         if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
             cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
-            done += 2
+            done += 1
             continue
         # print(f'{stdout.decode("utf-8")}')
         # print(f'{stderr.decode("utf-8")}')
@@ -473,7 +474,7 @@ async def get_json(URL, cookies_file=''):
             title = ansver['title']
         except Exception as e: 
             raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
-        done += 2
+        done += 1
     return id, title, ansver
 
 
