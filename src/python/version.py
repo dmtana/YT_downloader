@@ -1,9 +1,15 @@
-VERSION = '2024.07.24'
+VERSION = '2024.07.27'
 description = '''<i>
-- added the ability to track failed sending attempts 
-- updated libs
 - YouTube download fixes 
 </i>'''
+
+
+# VERSION = '2024.07.24'
+# description = '''<i>
+# - added the ability to track failed sending attempts 
+# - updated libs
+# - YouTube download fixes 
+# </i>'''
 
 
 # VERSION = '2024.07.23'

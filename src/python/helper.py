@@ -283,6 +283,7 @@ async def download_media(URL, is_video=False, cookies_file=''):
     file_name = ''
     file_id = ''
     done = 0
+    result = False
     while done < 15: # kostyl for facebook reels etc
         try:
             file_id, file_name, some_var = await get_json(URL)
@@ -293,6 +294,7 @@ async def download_media(URL, is_video=False, cookies_file=''):
             # raise Exception('YT-DLP ERROR')
         done += 1
     if is_video:
+        client = ''
         cookies = ''
         done = 0
         quality = ''
@@ -310,7 +312,8 @@ async def download_media(URL, is_video=False, cookies_file=''):
                         f'--max-filesize 50M '+ # KOSTYL for tg
                         f'-P "{curren_path}video" '+
                         f'-o "{str_buf_fix(file_id)}.mp4" '+
-                        f'{cookies} '+
+                        f'{cookies} '+ # bugfix fot youtube antibot system
+                        f'{client} '+ # bugfix fot youtube antibot system
                         f'"{URL}"')
                 process = await asyncio.create_subprocess_shell(
                     cmd,
@@ -327,6 +330,10 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     done = 15
                 if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
                     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file 
+                    done += 1
+                    continue
+                if '403' in str(stderr) and 'Forbidden' in str(stderr):
+                    client = ' --extractor-args "youtube:player_client=ios"'
                     done += 1
                     continue   
                 print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
@@ -361,12 +368,14 @@ async def download_media(URL, is_video=False, cookies_file=''):
             except Exception as e:
                 print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
             done += 1
+        result = True     
     else:
         cookies = ''
         done = 0
         quality = ''
+        client = ''
         print("[bot][+][DOWNLOADING AUDIO]")
-        while done < 2:
+        while done < 3:
             try:
                 cmd = str(f'yt-dlp -f ba '+
                         f'-o "{str_buf_fix(file_name)}" '+
@@ -374,7 +383,8 @@ async def download_media(URL, is_video=False, cookies_file=''):
                         f'-x --audio-quality 0 '+
                         f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
                         f'-P {curren_path}media_from_yt '+ # path
-                        f'{cookies} '+ # bugfix for antibot system
+                        f'{cookies} '+ # bugfix for youtube antibot system
+                        f'{client} '+ # bugfix fot youtube antibot system
                         f'"{URL}"')  # link
                 # os.system(cmd)  
                 process = await asyncio.create_subprocess_shell(
@@ -383,8 +393,8 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     stderr=subprocess.PIPE
                 )
                 stdout, stderr = await process.communicate()
-                # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
-                #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+                print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                      f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
                 if 'File is larger than max-filesize' in str(stdout):
                     error_message = str(f'<pre>File is larger than 50 Mb\n'+
                     'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
@@ -395,9 +405,16 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
                     done += 1
                     continue
+                if '403' in str(stderr) and 'Forbidden' in str(stderr):
+                    client = ' --extractor-args "youtube:player_client=ios"'
+                    done += 1
+                    continue
+                if 'ERROR' in str(stderr) or 'error' in str(stderr):
+                    raise Exception(stderr.decode("utf-8"))
                 print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
             except Exception as e:
                 print("[bot][X][ERROR DOWNLOAD AUDIO FILE ON async def download_media()]", e)
+                return file_id, f'ERROR DOWNLOADING AUDIO', result
             try:
                 link_thumbnail = some_var['thumbnail'] # link_thumbnail is link to image of this sound
                 # DOWNLOAD AND SAVE IMAGE
@@ -414,7 +431,8 @@ async def download_media(URL, is_video=False, cookies_file=''):
                 print("[bot][X][ERR DOWNLOAD IMAGE]", e)    
             await mp3_tag_editor.tag_edit(file_id)
             done += 1
-    return file_id, error_message            
+        result = True    
+    return file_id, error_message, result        
 
 async def compress_image(input_path, output_path, target_size_kb = 200):
     try:
