@@ -19,21 +19,20 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
         try:
             msg = await bot.send_message(chat_id=CHAT_ID, text='Downloading...')
             bot_name = str(msg.from_user.first_name)
-            file_id, error_message = await helper.download_media(URL, is_video=True)
-            await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
-            result = True
+            file_id, error_message, result = await helper.download_media(URL, is_video=True)
+            if result:
+                await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
         except Exception as e:
             try:
                 await bot.send_message(chat_id=CHAT_ID, text='ERROR INPUT, WRONG LINK')
             except Exception as e:
                 print(e)    
             print('[X][ERROR SENDING VIDEO in download_and_send_video()]', error_message, e)
-        finally:
-            try:
-                await bot.delete_message(CHAT_ID, msg.message_id)
-            except Exception as e:
-                print(e)
-            await bot.session.close()   
+    try:
+        await bot.delete_message(CHAT_ID, msg.message_id)
+    except Exception as e:
+        print(e)
+    await bot.session.close()   
     try:
         await write_to_db(information=URL, id=str(CHAT_ID), media_type='video', user_name=user_name, bot_name=bot_name, result=str(result))
     except Exception as e:
@@ -49,24 +48,22 @@ async def download_and_send_audio(TOKEN, URL, CHAT_ID, user_name, group='', voic
         try:    
             msg = await bot.send_message(chat_id=CHAT_ID, text='Downloading...')
             bot_name = str(msg.from_user.first_name)
-            file_id, error_message = await helper.download_media(URL)
-            await helper.send_audio(chat_id=CHAT_ID, bot=bot, file_id=file_id, group=group)
-            result = True
+            file_id, error_message, result = await helper.download_media(URL)
+            if result: 
+                await helper.send_audio(chat_id=CHAT_ID, bot=bot, file_id=file_id, group=group)
             if error_message:
                 await bot.send_message(chat_id=CHAT_ID, text=error_message)
-                result = False
         except Exception as e:
             try:
                 await bot.send_message(chat_id=CHAT_ID, text='ERROR INPUT, WRONG LINK')
             except Exception as e:
                 print(e)    
             print('[X][ERROR SENDING AUDIO in download_and_send_audio()]', error_message, e)
-        finally:
-            try:
-                await bot.delete_message(CHAT_ID, msg.message_id)
-            except Exception as e:
-                print(e)
-            await bot.session.close()   
+    try:
+        await bot.delete_message(CHAT_ID, msg.message_id)
+    except Exception as e:
+        print(e)
+    await bot.session.close()   
     try:
         if voice:
             media_type = 'voice'
