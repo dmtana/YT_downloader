@@ -27,3 +27,7 @@ cd bot_folder</code>
 </pre>
 
 Finished bot implementation -> <a href="https://t.me/yt_downloader_dmtana_bot">YT_downloader</a>
+
+<h3>YouTube fix:</h3>
+For YouTube You will need to add cookies for anti bot system. Download your account cookies from youtube in format <code>Netscape</code>, this can be obtained using a browser extension like <a href="https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc">Get cookies.txt LOCALLY</a>. After that copy this file to the config folder in the bot project and rename it to <code>www.youtube.com_cookies.txt</code>. 
+
