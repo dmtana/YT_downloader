@@ -273,11 +273,23 @@ async def send_audio(chat_id, bot, file_id, group='', voice=False):
         print("[bot][X][ERROR SENDING]", e)
     return send_audio_status
 
+async def send_from_joyreactor(CHAT_ID, TOKEN, LINK):
+    '''
+    simple method to send video file from joyreactor.cc
+    '''
+    if 'https://' in LINK and 'joyreactor.cc' in LINK: 
+        link = LINK
+    else: 
+        link = 'https:'+LINK
+    json_cmd = '{'+f'"chat_id": "{CHAT_ID}", "document": "{link}", "parse_mode": "HTML"'+'}'
+    cmd = f'curl -X POST -H \'Content-Type: application/json\' -d \'{json_cmd}\' https://api.telegram.org/bot{TOKEN}/sendDocument'
+    print(cmd)
+    process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = await process.communicate()
+    print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+            f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+
 async def download_media(URL, is_video=False, cookies_file=''):
-    """
-    TODO: make something with this issue
-       ERROR: [youtube] MWULA-mAlKs: Sign in to confirm you’re not a bot. This helps protect our community
-    """
     some_var = '' # JSON info from yt-dlp lib
     error_message = ''    
     file_name = ''
