@@ -87,9 +87,14 @@ async def text_handler(message: Message, bot: Bot):
     args = helper.get_args(message.text)
     print(message.text)
     try:
-        if 'https://' and 'youtube' and '&list=' in args['link']:
+        
+        if 'https://' in args['link'] and 'youtube' in args['link'] and '&list=' in args['link']:
             await bot.send_message(message.chat.id, "Бот не может качать весь плейлист, введите ссылку на отдедельную песню в формате 'https://...'\n\n"+
                                    "The bot cannot download the entire playlist, enter a link to an individual song in the format 'https://...")
+        elif '//' and 'joyreactor.cc' in args['link']:
+             threading.Thread(target=lambda: asyncio.run(helper.send_from_joyreactor(LINK=args['link'],
+                                                                                     CHAT_ID=message.chat.id,
+                                                                                     TOKEN=TOKEN))).start()    
         elif "https://" in args['link']:
             # message_info need for delete message after sending file
             try:
