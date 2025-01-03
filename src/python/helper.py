@@ -317,6 +317,8 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     quality = ''
                 elif SITE_1 in URL:
                     quality = '-f w' # worst
+                # elif 'youtube' in URL:
+                #     quality = '-f ba+bv --merge-output-format mp4'
                 else: 
                     quality = '-f b' # best
                     # quality = '-f ba+bv'
