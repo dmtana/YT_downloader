@@ -1,7 +1,14 @@
-VERSION = '2024.07.27'
+VERSION = '2025.01.04'
 description = '''<i>
-- YouTube download fixes 
+- Libs update
+- Creating scripts update
 </i>'''
+
+
+# VERSION = '2024.07.27'
+# description = '''<i>
+# - YouTube download fixes 
+# </i>'''
 
 
 # VERSION = '2024.07.24'

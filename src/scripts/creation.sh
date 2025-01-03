@@ -147,7 +147,7 @@ for ((i=0; i<num_of_bots; i++)); do
     cd bot_$i
 
     echo "
-FROM python:3.8
+FROM python:latest
 WORKDIR /app
 COPY . /app
 RUN pip install --upgrade pip
