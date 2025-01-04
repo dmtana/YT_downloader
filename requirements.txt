@@ -6,3 +6,5 @@ asyncpg
 Pillow
 ffmpeg-python
 opencv-python
+requests
+mutagen
