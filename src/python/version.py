@@ -1,8 +1,15 @@
-VERSION = '2025.01.04'
+VERSION = '2025.05.01'
 description = '''<i>
-- Libs update
-- Creating scripts update
+- Minor optimization
+- Fixing bugs
 </i>'''
+
+
+# VERSION = '2025.01.04'
+# description = '''<i>
+# - Libs update
+# - Creating scripts update
+# </i>'''
 
 
 # VERSION = '2024.07.27'

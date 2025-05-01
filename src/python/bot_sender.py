@@ -14,6 +14,7 @@ from config.config import ADMINS_ID, MODERATORS_ID
 async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HTML'):
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
     bot_name = ''
+    error_message = ''
     result = False
     async with ChatActionSender.upload_video(chat_id=CHAT_ID, bot=bot):
         try:
@@ -22,6 +23,8 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
             file_id, error_message, result = await helper.download_media(URL, is_video=True)
             if result:
                 await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
+            else:
+                await bot.send_message(chat_id=CHAT_ID, text=f'ERROR INPUT, {error_message}')
         except Exception as e:
             try:
                 await bot.send_message(chat_id=CHAT_ID, text='ERROR INPUT, WRONG LINK')
