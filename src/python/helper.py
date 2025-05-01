@@ -41,7 +41,8 @@ async def save_json(a, j): #this method save json info
 # commands for download video
 commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', 'v', 'в']
 commands_audio = ['-audio', 'audio', '-a', 'аудио', '-а', '-аудио', 'a', 'а']
-coomands_del_msg = ['-del', 'del', '-d', 'd', 'уд', '-уд', 'у', '-у', '-д', 'д']
+commands_del_msg = ['-del', 'del', '-d', 'd', 'уд', '-уд', 'у', '-у', '-д', 'д']
+commands_video_quality = ['best', 'b', 'bestvideo', 'bv']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
@@ -59,7 +60,7 @@ def get_args(msg : str) -> dict:
     - commands dict   
     """
     # dict pasrsing
-    commands = {"link": '', "video": False, "group": '', "del_msg": False, "audio": False}
+    commands = {"link": '', "video": False, "group": '', "del_msg": False, "audio": False, "video_quality": ''}
     # trim and delete spaces between words
     list_str = msg.split()
     print(list_str)
@@ -74,7 +75,7 @@ def get_args(msg : str) -> dict:
             commands['audio'] = True
         if any(element in list_str for element in commands_video):
             commands['video'] = True
-        if any(element in list_str for element in coomands_del_msg):
+        if any(element in list_str for element in commands_del_msg):
             commands['del_msg'] = True
         if any(string for string in list_str if 'group=' in string):
             commands['group'] = next((string for string in list_str if 'group=' in string), None).replace('group=', '')
@@ -303,6 +304,9 @@ async def download_media(URL, is_video=False, cookies_file=''):
                 done = 15
         except Exception as e:
             print("[bot][X][CAN'T GET JSON FROM LINK]", e)
+            if done == 14:
+                result = False
+                raise Exception("Something wrong with LINK - YT-DLP ERROR") 
             # raise Exception('YT-DLP ERROR')
         done += 1
     if is_video:
@@ -335,9 +339,9 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     stderr=subprocess.PIPE
                 )
                 stdout, stderr = await process.communicate()
-                #print(cmd)
-                # print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
-                #       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
+                print(cmd)
+                print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
+                      f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
                 if 'already been downloaded' in stdout.decode("utf-8"):
                     done = 15
                 if stderr.decode("utf-8") == '':
@@ -379,9 +383,10 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     except Exception as e:
                         print('[bot][X][ERROR PART FILE DELETING]', e)
                     print(error_message)
+                    return file_id, error_message, result
             except Exception as e:
-                print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)
-            done += 1
+                print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)                    
+            done += 1 
         result = True     
     else:
         cookies = ''
