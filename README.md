@@ -29,8 +29,8 @@ cd bot_folder</code>
 Finished bot implementation -> <a href="https://t.me/yt_downloader_dmtana_bot">YT_downloader</a>
 
 <h3>YouTube antibot system fix:</h3>
-For YouTube You will need to add cookies for anti bot system. Download your account cookies from youtube in format <code>Netscape</code>, this can be obtained using a browser extension like <a href="https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc">Get cookies.txt LOCALLY</a>. After that copy this file to the config folder in the bot project and rename it to <code>www.youtube.com_cookies.txt</code>. 
+For YouTube You will need to add cookies for anti bot system. Download your account cookies from youtube in format <code><a href="https://docs.cyotek.com/cyowcopy/1.10/netscapecookieformat.html">Netscape</a></code>, this can be obtained using a browser extension like <a href="https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc">Get cookies.txt LOCALLY</a>. After that copy this file to the config folder in the bot project and rename it to <code>www.youtube.com_cookies.txt</code>. 
 
 
 <h3>Instagram antibot system fix:</h3>
-The same thing like with yotube fix, just pull instagram cookies in format <code>Netscape</code>, and create file in config folder <code>www.instagram.com_cookies.txt</code>
+The same thing like with yotube fix, just pull instagram cookies in format <code><a href="https://docs.cyotek.com/cyowcopy/1.10/netscapecookieformat.html">Netscape</a></code>, and create file in config folder <code>www.instagram.com_cookies.txt</code>
