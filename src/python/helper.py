@@ -508,6 +508,10 @@ async def get_json(URL, cookies_file=''):
             cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
             done += 1
             continue
+        if 'login required' in str(stderr):
+                    cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
+                    done += 1
+                    continue
         # print(f'{stdout.decode("utf-8")}')
         # print(f'{stderr.decode("utf-8")}')
         id = None
