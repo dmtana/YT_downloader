@@ -353,7 +353,11 @@ async def download_media(URL, is_video=False, cookies_file=''):
                 if '403' in str(stderr) and 'Forbidden' in str(stderr):
                     client = ' --extractor-args "youtube:player_client=ios"'
                     done += 1
-                    continue   
+                    continue
+                if 'login required' in str(stderr):
+                    cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
+                    done += 1
+                    continue
                 print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
                 try:
                     video_path = f'{curren_path}video/{str_buf_fix(file_id)}.mp4'
@@ -426,6 +430,10 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     continue
                 if '403' in str(stderr) and 'Forbidden' in str(stderr):
                     client = ' --extractor-args "youtube:player_client=ios"'
+                    done += 1
+                    continue
+                if 'login required' in str(stderr):
+                    cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
                     done += 1
                     continue
                 if 'ERROR' in str(stderr) or 'error' in str(stderr):

@@ -1,8 +1,15 @@
-VERSION = '2025.05.01'
+VERSION = '2025.07.12'
 description = '''<i>
-- Minor optimization
-- Fixing bugs
+- instagram fix
 </i>'''
+
+
+
+# VERSION = '2025.05.01'
+# description = '''<i>
+# - Minor optimization
+# - Fixing bugs
+# </i>'''
 
 
 # VERSION = '2025.01.04'
