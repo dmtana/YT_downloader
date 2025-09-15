@@ -1,8 +1,18 @@
-VERSION = '2025.07.12'
+VERSION = '2025.09.14'
 description = '''<i>
 - instagram fix
+- facebook fix
+- added limits for downloads 2 per hour and 5 per day, to keep bot alive when it's busy
+- added black list of users (who trying to download sensetive content, or harami content)
+- last libraries updated
+- and minor fixes
 </i>'''
 
+
+# VERSION = '2025.07.12'
+# description = '''<i>
+# - instagram fix
+# </i>'''
 
 
 # VERSION = '2025.05.01'
