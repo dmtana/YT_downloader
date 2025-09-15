@@ -8,6 +8,7 @@ import random
 import datetime
 import cv2
 import random
+import supportedsites
 
 from PIL import Image
 from aiogram import Bot
@@ -290,13 +291,13 @@ async def send_from_joyreactor(CHAT_ID, TOKEN, LINK):
     print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
             f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
 
-async def download_media(URL, is_video=False, cookies_file=''):
+async def download_media(URL, is_video=False):
     some_var = '' # JSON info from yt-dlp lib
     error_message = ''    
     file_name = ''
     file_id = ''
     done = 0
-    result = False
+    result = False 
     while done < 15: # kostyl for facebook reels etc
         try:
             file_id, file_name, some_var = await get_json(URL)
@@ -310,19 +311,23 @@ async def download_media(URL, is_video=False, cookies_file=''):
             # raise Exception('YT-DLP ERROR')
         done += 1
     if is_video:
+        max_size = True
         client = ''
-        cookies = ''
+        cookies = await set_cookies(URL)
         done = 0
         quality = ''
         print("[bot][+][DOWNLOADING VIDEO]")
         while done < 15: # kostyl for facebook reels and tiktok
+            print('loop numper ', done, '\n\n\n')
             try:
                 if 'tiktok' in URL:
                     quality = ''
-                elif SITE_1 in URL:
-                    quality = '-f w' # worst
+                # elif SITE_1 in URL:
+                #     quality = '-f w' # worst
                 # elif 'youtube' in URL:
                 #     quality = '-f ba+bv --merge-output-format mp4'
+                elif not max_size:
+                    quality = '-f w'
                 else: 
                     quality = '-f b' # best
                     # quality = '-f ba+bv'
@@ -342,23 +347,41 @@ async def download_media(URL, is_video=False, cookies_file=''):
                 print(cmd)
                 print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
                       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
-                if 'already been downloaded' in stdout.decode("utf-8"):
-                    done = 15
-                if stderr.decode("utf-8") == '':
-                    done = 15
-                if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
-                    cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file 
-                    done += 1
-                    continue
+                # if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
+                #     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file 
+                #     done += 1
+                #     continue
                 if '403' in str(stderr) and 'Forbidden' in str(stderr):
                     client = ' --extractor-args "youtube:player_client=ios"'
                     done += 1
                     continue
-                if 'login required' in str(stderr):
-                    cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
+                # if 'login required' in str(stderr):
+                #     cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
+                #     done += 1
+                #     continue
+                if 'File is larger than max-filesize' in str(stdout) and max_size:
                     done += 1
+                    max_size = False
+                    print('continue + max_size', max_size)
                     continue
-                print("[bot][+][DOWNLOAD VIDEO COMPLETE]")
+                elif 'File is larger than max-filesize' in str(stdout) and not max_size:
+                    done += 13
+                    print('second elif + max_size', max_size)
+                    error_message = str(f'<pre>File is larger than 50 Mb\n'+
+                    'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
+                    'поэтому да, очень большие файлы пока не будут работать. Извини. '+
+                    'Этот лимит может быть изменен в будущем.</pre>')
+                    try:
+                        os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
+                        print('[bot][+][VIDEO PART-FILE DELETED]')
+                    except Exception as e:
+                        print('[bot][X][ERROR PART FILE DELETING]', e)
+                    print(error_message)
+                    return file_id, error_message, result
+                if 'already been downloaded' in stdout.decode("utf-8"):
+                    done = 15
+                if stderr.decode("utf-8") == '':
+                    done = 15
                 try:
                     video_path = f'{curren_path}video/{str_buf_fix(file_id)}.mp4'
                     cap = cv2.VideoCapture(video_path)
@@ -374,26 +397,13 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     print("[bot][+][DOWNLOAD THUMBNAIL VIDEO IMAGE COMPLETE]")    
                 except Exception as e:
                     print("[bot][X][ERR DOWNLOAD THUMBNAIL VIDEO IMAGE]", e)
-                if 'File is larger than max-filesize' in str(stdout):
-                    # quality = 'w' # worst quality
-                    done += 13
-                    error_message = str(f'<pre>File is larger than 50 Mb\n'+
-                    'Боты в настоящее время могут отправлять файлы любого типа размером до 50 МБ, '+
-                    'поэтому да, очень большие файлы пока не будут работать. Извини. '+
-                    'Этот лимит может быть изменен в будущем.</pre>')
-                    try:
-                        os.remove(f'{curren_path}video/{str_buf_fix(file_id)}.mp4.part')
-                        print('[bot][+][VIDEO PART-FILE DELETED]')
-                    except Exception as e:
-                        print('[bot][X][ERROR PART FILE DELETING]', e)
-                    print(error_message)
-                    return file_id, error_message, result
             except Exception as e:
                 print("[bot][X][ERROR DOWNLOAD VIDEO FILE ON async def download_media()]", e)                    
             done += 1 
-        result = True     
+        result = True    
+        print("[bot][+][DOWNLOAD VIDEO COMPLETE]") 
     else:
-        cookies = ''
+        cookies = await set_cookies(URL)
         done = 0
         quality = ''
         client = ''
@@ -424,18 +434,18 @@ async def download_media(URL, is_video=False, cookies_file=''):
                     'поэтому да, очень большие файлы пока не будут работать. Извини. '+
                     'Этот лимит может быть изменен в будущем.</pre>')
                     print(error_message)
-                if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
-                    cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
-                    done += 1
-                    continue
+                # if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
+                #     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
+                #     done += 1
+                #     continue
                 if '403' in str(stderr) and 'Forbidden' in str(stderr):
                     client = ' --extractor-args "youtube:player_client=ios"'
                     done += 1
                     continue
-                if 'login required' in str(stderr):
-                    cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
-                    done += 1
-                    continue
+                # if 'login required' in str(stderr):
+                #     cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
+                #     done += 1
+                #     continue
                 if 'ERROR' in str(stderr) or 'error' in str(stderr):
                     raise Exception(stderr.decode("utf-8"))
                 print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
@@ -492,8 +502,27 @@ async def crop_to_square(image_path, output_path):
         img_cropped = img.crop((left, top, right, bottom))
         img_cropped.save(output_path)
 
+
+async def set_cookies(URL):
+    cookies_str = ''
+    if any(yt in URL for yt in  supportedsites.youtube):
+        # print(f'--cookies {curren_path}config/cookies/www.youtube.com_cookies.txt')
+        cookies_str = f'--cookies {curren_path}config/cookies/www.youtube.com_cookies.txt'
+        return cookies_str
+    elif any(inst in URL for inst in supportedsites.instagram):
+        # print(f'--cookies {curren_path}config/cookies/www.instagram.com_cookies.txt')
+        cookies_str = f'--cookies {curren_path}config/cookies/www.instagram.com_cookies.txt'
+        return cookies_str
+    elif any(fb in URL for fb in supportedsites.facebook):
+        # print(f'--cookies {curren_path}config/cookies/www.facebook.com_cookies.txt')
+        cookies_str = f'--cookies {curren_path}config/cookies/www.facebook.com_cookies.txt'
+        return cookies_str
+    else: 
+        return cookies_str
+    
+    
 async def get_json(URL, cookies_file=''):
-    cookies = ''
+    cookies = await set_cookies(URL)
     done = 0
     while done < 2:
         cmd = str(f'yt-dlp -J {cookies} "{URL}"')
@@ -503,15 +532,15 @@ async def get_json(URL, cookies_file=''):
             stderr=subprocess.PIPE
         )
         stdout, stderr = await process.communicate()
-        # print(cmd)
-        if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
-            cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
-            done += 1
-            continue
-        if 'login required' in str(stderr):
-                    cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
-                    done += 1
-                    continue
+        print(cmd)
+        # if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
+        #     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
+        #     done += 1
+        #     continue
+        # if 'login required' in str(stderr):
+        #             cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
+        #             done += 1
+        #             continue
         # print(f'{stdout.decode("utf-8")}')
         # print(f'{stderr.decode("utf-8")}')
         id = None

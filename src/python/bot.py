@@ -9,17 +9,11 @@ from aiogram.client.bot import DefaultBotProperties
 
 from config.config import TOKEN
 
-# подготовка к запуску бота
 async def start():
-    # Logging to console
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s) .%(funcName)s(%(lineno)d) - %(message)s")
-
-    # get token and set html parsing
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 
     dp = Dispatcher()
-
-    # handler registration
     await handlers.handlers_reg(dp)
    
     try:  # create folders

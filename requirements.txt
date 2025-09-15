@@ -8,3 +8,4 @@ ffmpeg-python
 opencv-python
 requests
 mutagen
+aiosqlite

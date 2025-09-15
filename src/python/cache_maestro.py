@@ -4,7 +4,30 @@ import time
 
 # fix for .venv py
 curren_path = os.path.dirname(__file__)+'/'
+# cookies_dir = 'config/cookies/'
 
+# class CookieChecker:
+#     def __init__(self, cookies_dir=cookies_dir):
+#         self.cookies_dir = cookies_dir
+#         self.cookies = {}
+
+#     async def load_cookies(self):
+#         self.cookies = {}
+
+#         if not os.path.isdir(self.cookies_dir):
+#             return self.cookies
+
+#         for filename in os.listdir(self.cookies_dir):
+#             file_path = os.path.join(self.cookies_dir, filename)
+
+#             if not os.path.isfile(file_path):
+#                 continue
+
+#             async with open(file_path, mode='r', encoding='utf-8') as f:
+#                 content = await f.read()
+#                 self.cookies[filename] = content
+
+#         return self.cookies
 
 async def create_folders():
     try:

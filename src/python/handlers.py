@@ -1,4 +1,4 @@
-from config.config import ADMINS_ID, MODERATORS_ID, TOKEN, START_TEXT, GROUP1, GROUP2, GROUP3
+from config.config import *
 
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
@@ -12,6 +12,13 @@ from side_menu import set_commands
 from database.database import start_db
 from uptime import Uptime
 
+from collections import defaultdict
+from datetime import datetime, timedelta
+
+# from cache_maestro import CookieChecker
+
+from supportedsites import ELIGIBLE_SITES
+
 import asyncio
 import bot_sender
 import threading
@@ -20,6 +27,13 @@ import keyboards
 
 uptime = Uptime()
 cache = TemporaryCache()
+
+WHITELIST = USERS['white_list']
+downloads = defaultdict(list)
+downloads_lock = asyncio.Lock()
+
+
+# cookies = CookieChecker()
 
 # HANDLER REGISTRATION 
 async def handlers_reg(dp: Dispatcher):
@@ -86,62 +100,67 @@ async def text_handler(message: Message, bot: Bot):
     message_info = None
     args = helper.get_args(message.text)
     print(message.text)
-    try:
-        
-        if 'https://' in args['link'] and 'youtube' in args['link'] and '&list=' in args['link']:
-            await bot.send_message(message.chat.id, "Бот не может качать весь плейлист, введите ссылку на отдедельную песню в формате 'https://...'\n\n"+
-                                   "The bot cannot download the entire playlist, enter a link to an individual song in the format 'https://...")
-        elif '//' and 'joyreactor.cc' in args['link']:
-             threading.Thread(target=lambda: asyncio.run(helper.send_from_joyreactor(LINK=args['link'],
-                                                                                     CHAT_ID=message.chat.id,
-                                                                                     TOKEN=TOKEN))).start()    
-        elif "https://" in args['link']:
-            # message_info need for delete message after sending file
-            try:
-                if args['video'] or args['audio']:
-                    if args['video']:
-                        threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
-                                                                                        URL=args['link'],
-                                                                                        CHAT_ID=message.chat.id,
-                                                                                        user_name=message.from_user.full_name))).start()
-                    if args['audio']:
-                        group = ''
-                        if args['group'] != '':
-                            group = args['group']
-                        threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_audio(TOKEN=TOKEN,
-                                                                                        URL=args['link'],
-                                                                                        CHAT_ID=message.chat.id,
-                                                                                        group=group,
-                                                                                        user_name=message.from_user.full_name))).start()
-                else:
-                    key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
-                    key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
-                    message_info = await message.reply("<b>DOWNLOAD</b>", 
-                                                reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
-                    await cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
-                if args['del_msg']:
-                    try:
-                        await bot.delete_message(message.chat.id, message.message_id)
-                    except Exception as e:
-                        print(e)
-            except Exception as e: 
-                print(f"ERROR in text_handler - {str(e)}")
-        elif message.text.lower() in helper.cat:
-            await helper.show_cat(message, bot)
-            print("мяу", end=" ")
-        else:
-            await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'\n"+
-                                   "Please enter the link in the format 'https://...")
-            print(message.chat.type)
-            print("[-][ERROR INPUT]")
-    except Exception as e:
+    if await can_download(message.chat.id):
         try:
-            await bot.delete_message(message.chat.id, message_info.message_id)
+            if 'https://' in args['link'] and 'youtube' in args['link'] and '&list=' in args['link']:
+                await bot.send_message(message.chat.id, "Бот не может качать весь плейлист, введите ссылку на отдедельную песню в формате 'https://...'\n\n"+
+                                    "The bot cannot download the entire playlist, enter a link to an individual song in the format 'https://...")
+            elif '//' and 'joyreactor.cc' in args['link']:
+                threading.Thread(target=lambda: asyncio.run(helper.send_from_joyreactor(LINK=args['link'],
+                                                                                        CHAT_ID=message.chat.id,
+                                                                                        TOKEN=TOKEN))).start()
+            elif "https://" in args['link'] and any(site in args['link'] for site in ELIGIBLE_SITES):
+                # message_info need for delete message after sending file
+                try:
+                    if args['video'] or args['audio']:
+                        if args['video']:
+                            threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
+                                                                                            URL=args['link'],
+                                                                                            CHAT_ID=message.chat.id,
+                                                                                            user_name=message.from_user.full_name))).start()
+                        if args['audio']:
+                            group = ''
+                            if args['group'] != '':
+                                group = args['group']
+                            threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_audio(TOKEN=TOKEN,
+                                                                                            URL=args['link'],
+                                                                                            CHAT_ID=message.chat.id,
+                                                                                            group=group,
+                                                                                            user_name=message.from_user.full_name))).start()
+                    else:
+                        key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
+                        key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal
+                        message_info = await message.reply("<b>DOWNLOAD</b>", 
+                                                    reply_markup=await keyboards.select_media_type(key, message.from_user.id)) # reply looks much better 
+                        await cache.add_to_cache(key, [message_info, args, message.from_user.full_name])
+                    if args['del_msg']:
+                        try:
+                            await bot.delete_message(message.chat.id, message.message_id)
+                        except Exception as e:
+                            print(e)
+                except Exception as e: 
+                    print(f"ERROR in text_handler - {str(e)}")
+            elif "https://" in args['link'] and not any(site in args['link'] for site in ELIGIBLE_SITES):
+                await bot.send_message(message.chat.id, "THE SITE IS NOT SUPPORTED!!!")
+                print("[-][ERROR INPUT, NOT SUPPORTED SITE]")    
+            elif message.text.lower() in helper.cat:
+                await helper.show_cat(message, bot)
+                print("мяу", end=" ")
+            else:
+                await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'\n"+
+                                    "Please enter the link in the format 'https://...")
+                print(message.chat.type)
+                print("[-][ERROR INPUT]")
         except Exception as e:
-            print('ERROR DELETING MESSAGE', e)
-            await bot.send_message(message.chat.id, "ERROR INPUT, CALL TO ADMIN")    
-        await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
-        print("[bot][-][ERROR IN MAIN PACKAGE]", e)
+            try:
+                await bot.delete_message(message.chat.id, message_info.message_id)
+            except Exception as e:
+                print('ERROR DELETING MESSAGE', e)
+                await bot.send_message(message.chat.id, "ERROR INPUT, CALL TO ADMIN")    
+            await bot.send_message(message.chat.id, "ERROR INPUT, WRONG LINK")
+            print("[bot][-][ERROR IN MAIN PACKAGE]", e)
+    else:
+        await bot.send_message(message.chat.id, "PLS WAIT, BOT IS OVERLOADED. TRY AGAIN LATER!\nПОЖАЛУЙСТА ПОДОЖДИТЕ БОТ ПЕРЕГРУЖЕН, ПОВТОРИТЕ ПОПЫТКУ ПОЗЖЕ!")        
 
 
 # DOWNLOAD AND SEND VIDEO
@@ -195,7 +214,7 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
     try:
         if len(ADMINS_ID) > 0:
             for admin_id in ADMINS_ID:
-                ms.append(await bot.send_message(chat_id=admin_id, text=f"<pre>FEEDBACK\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>")) 
+                ms.append(await bot.send_message(chat_id=admin_id, text=f"<pre>FEEDBACK\nBOT ID:\n{TOKEN}\n<b>{message.from_user.full_name}, ID-{message.from_user.id}:\n</b>{message.text}</pre>")) 
     except Exception as e:
         print('[ERROR FEEDBACK TO ADMINS]', e)
         await message.reply('ERROR FEEDBACK, SEND MESSAGE TO ADMINS')
@@ -217,6 +236,36 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
     except Exception as e:  
         await message.reply('ERROR FEEDBACK, CAN\'T PIN MESSAGE')      
     await state.clear()
+
+
+# LIMITS DOWNLOAD
+async def can_download(user_id: int) -> bool:
+    async with downloads_lock:
+        now = datetime.now()
+        if user_id in WHITELIST:
+            return True
+        if user_id in USERS['blocked']: # для любителей собачек и прочего
+            return False
+        
+        downloads[user_id] = [
+            t for t in downloads[user_id]
+            if now - t < timedelta(days=1)
+        ]
+        # limit limit per day
+        if len(downloads[user_id]) >= LIMITS['per_day']:
+            print('[!][OVER LIMITS]')
+            return False
+        # limit 2 dl for last 10 min
+        recent = [
+            t for t in downloads[user_id]
+            if now - t < timedelta(minutes=10)
+        ]
+        if len(recent) >= LIMITS['per_hour']:
+            print('[!][OVER LIMITS]')
+            return False
+        downloads[user_id].append(now)
+        return True
+
 
 #################################
 # FIRST ACTION AFTER LAUNCH BOT

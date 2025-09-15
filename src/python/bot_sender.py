@@ -24,10 +24,10 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
             if result:
                 await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
             else:
-                await bot.send_message(chat_id=CHAT_ID, text=f'ERROR INPUT, {error_message}')
+                await bot.send_message(chat_id=CHAT_ID, text=f'ERROR INPUT, {error_message.replace(TOKEN,'')}')
         except Exception as e:
             try:
-                await bot.send_message(chat_id=CHAT_ID, text='ERROR INPUT, WRONG LINK')
+                await bot.send_message(chat_id=CHAT_ID, text=f'ERROR INPUT, WRONG LINK {error_message.replace(TOKEN,'')}')
             except Exception as e:
                 print(e)    
             print('[X][ERROR SENDING VIDEO in download_and_send_video()]', error_message, e)
