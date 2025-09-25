@@ -15,7 +15,7 @@ from aiogram import Bot
 from aiogram.types import Message, FSInputFile
 from aiogram.utils.chat_action import ChatActionSender
 
-from config.config import SITE_1, TOKEN
+from config.config import TOKEN
 
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cat', 'pusy']
@@ -298,18 +298,15 @@ async def download_media(URL, is_video=False):
     file_id = ''
     done = 0
     result = False 
-    while done < 15: # kostyl for facebook reels etc
-        try:
-            file_id, file_name, some_var = await get_json(URL)
-            if await save_json(file_id, some_var):
-                done = 15
-        except Exception as e:
-            print("[bot][X][CAN'T GET JSON FROM LINK]", e)
-            if done == 14:
-                result = False
-                raise Exception("Something wrong with LINK - YT-DLP ERROR") 
-            # raise Exception('YT-DLP ERROR')
-        done += 1
+    try:
+        file_id, file_name, some_var = await get_json(URL)
+        if await save_json(file_id, some_var):
+            result = True
+    except Exception as e:
+        print("[bot][X][CAN'T GET JSON FROM LINK]", e)
+        result = False
+        raise Exception("Something wrong with LINK - YT-DLP ERROR") 
+        # raise Exception('YT-DLP ERROR')
     if is_video:
         max_size = True
         client = ''
@@ -318,7 +315,6 @@ async def download_media(URL, is_video=False):
         quality = ''
         print("[bot][+][DOWNLOADING VIDEO]")
         while done < 15: # kostyl for facebook reels and tiktok
-            print('loop numper ', done, '\n\n\n')
             try:
                 if 'tiktok' in URL:
                     quality = ''
