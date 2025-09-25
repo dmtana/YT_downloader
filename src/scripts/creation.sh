@@ -20,6 +20,10 @@ passwd_pg_admin='admin'
 network_mode_host=''
 ports_locker='#'
 
+# LIMITS
+ped_day=99
+per_hour=99
+
 read -p "Enter TOKEN: " TOKEN
 IFS=',' read -ra TOKENS <<< "$TOKEN"
 
@@ -169,7 +173,16 @@ INFO        = {}
 GROUP1      = ''
 GROUP2      = ''
 GROUP3      = ''
-SITE_1      = 'site1'
+LIMITS = {
+    'per_day': $per_day,
+    'per_hour': $per_hour
+}
+USERS = {
+    'blocked': [], 
+    'admins': [],
+    'moderators': [],
+    'white_list': []
+}
 DATABASE = {'pass':'$passwd', 'user':'$user', 'host':'$host', 'port':'$port', 'database':'$db'}
 " > config.py
 
