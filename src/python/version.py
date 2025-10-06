@@ -1,5 +1,6 @@
-VERSION = '2025.09.14'
+VERSION = '2025.10.06'
 description = '''<i>
+- temporary fixing for youtube
 - instagram fix
 - facebook fix
 - added limits for downloads 2 per hour and 5 per day, to keep bot alive when it's busy
