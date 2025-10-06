@@ -327,6 +327,7 @@ async def download_media(URL, is_video=False):
                 else: 
                     quality = '-f b' # best
                     # quality = '-f ba+bv'
+                    #  "-t mp4" USE THIS FOR TEMPORARY FIX 
                 cmd = str(f'yt-dlp {quality} '+
                         f'--max-filesize 50M '+ # KOSTYL for tg
                         f'-P "{curren_path}video" '+
@@ -401,12 +402,12 @@ async def download_media(URL, is_video=False):
     else:
         cookies = await set_cookies(URL)
         done = 0
-        quality = ''
+        quality = '-f ba '
         client = ''
         print("[bot][+][DOWNLOADING AUDIO]")
         while done < 3:
             try:
-                cmd = str(f'yt-dlp -f ba '+
+                cmd = str(f'yt-dlp {quality}'+
                         f'-o "{str_buf_fix(file_name)}" '+
                         f'--max-filesize 50.0M '+ # KOSTYL tg size 
                         f'-x --audio-quality 0 '+
@@ -416,6 +417,7 @@ async def download_media(URL, is_video=False):
                         f'{client} '+ # bugfix fot youtube antibot system
                         f'"{URL}"')  # link
                 # os.system(cmd)  
+                print(cmd)
                 process = await asyncio.create_subprocess_shell(
                     cmd,
                     stdout=subprocess.PIPE,
@@ -430,6 +432,11 @@ async def download_media(URL, is_video=False):
                     'поэтому да, очень большие файлы пока не будут работать. Извини. '+
                     'Этот лимит может быть изменен в будущем.</pre>')
                     print(error_message)
+                if 'Requested format is not available.' in str(stderr) and any(yt in URL for yt in  supportedsites.youtube):
+                    URL = f"https://www.youtube.com/watch?v={file_id}" # forcing to download 
+                    quality = ''
+                    done += 2
+                    continue    
                 # if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
                 #     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file
                 #     done += 1
