@@ -1,13 +1,19 @@
-VERSION = '2025.10.06'
+VERSION = '2025.12.06'
 description = '''<i>
-- temporary fixing for youtube
-- instagram fix
-- facebook fix
-- added limits for downloads 2 per hour and 5 per day, to keep bot alive when it's busy
-- added black list of users (who trying to download sensetive content, or harami content)
-- last libraries updated
-- and minor fixes
+- cookies fix
+- upd libs
 </i>'''
+
+# VERSION = '2025.10.06'
+# description = '''<i>
+# - temporary fixing for youtube
+# - instagram fix
+# - facebook fix
+# - added limits for downloads 2 per hour and 5 per day, to keep bot alive when it's busy
+# - added black list of users (who trying to download sensetive content, or harami content)
+# - last libraries updated
+# - and minor fixes
+# </i>'''
 
 
 # VERSION = '2025.07.12'

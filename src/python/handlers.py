@@ -19,6 +19,8 @@ from datetime import datetime, timedelta
 
 from supportedsites import ELIGIBLE_SITES
 
+import os
+
 import asyncio
 import bot_sender
 import threading
@@ -49,6 +51,9 @@ async def handlers_reg(dp: Dispatcher):
 
     # TEXT HANDLER
     dp.message.register(text_handler, F.text)
+
+    # DOCUMENTS HANDLER
+    dp.message.register(document_handler, F.document)
 
     # SELECTORS MEDIA DOWNLOADER
     dp.callback_query.register(download_and_send_audio, SelecMediaDownloader.filter(F.media_type == 'audio'))
@@ -93,6 +98,30 @@ async def get_version(message: Message):
 
 
 #################################
+
+
+# DOCUMENTS HANDLER
+async def document_handler(message: Message, bot: Bot):
+# For updating cookies file 
+
+    if message.from_user.id in ADMINS_ID:
+
+        document = message.document
+        file_id = document.file_id
+        file = await bot.get_file(file_id)
+
+        curren_path = os.path.dirname(__file__)+'/'
+        filename = document.file_name
+        os.makedirs(f"{curren_path}config/cookies", exist_ok=True)
+
+        file_path = f"{curren_path}config/cookies/{filename}"
+
+        await bot.download_file(file.file_path, file_path)
+
+        await message.answer(f"File '{filename}' saved!")
+
+        # await message.answer_document(FSInputFile(file_path))
+
 
 # TEXT HANDLER
 async def text_handler(message: Message, bot: Bot):
