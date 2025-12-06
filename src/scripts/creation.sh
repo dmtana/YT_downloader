@@ -11,6 +11,7 @@ passwd='postgres'
 db='bot_data'
 port='5432'
 port_pgadmin='2345'
+ip_address_of_db=''
 
 # PGADMIN CONFIG
 user_pg_admin='admin@admin.com'
@@ -90,6 +91,7 @@ else
     echo "[X][FAILED apt install docker-compose -y]"
 fi
 
+# EOL - is End Of Lines alias, could be any like END or VAL or XYZ
 # Create docker-compose file
 cat <<EOL > docker-compose.yml
 version: '3.9'
@@ -130,28 +132,42 @@ $ports_locker      - "$port_pgadmin:$port_pgadmin"
 $network_mode_host    network_mode: host
 EOL
 
-# Add bot images
-for ((c=0; c<num_of_bots; c++)); do
+# Add bot images or image if amount is 1
+if (( num_of_bots == 1 )); then
     cat <<EOL >> docker-compose.yml
+  yt_downloader:
+    image: bot_image
+    volumes:
+      - ./config:/app/YT_downloader/src/python/config
+$network_mode_host    network_mode: host
+EOL
+else
+    for ((c=0; c<num_of_bots; c++)); do
+        cat <<EOL >> docker-compose.yml
   yt_downloader_$c:
     image: bot_image_$c
     volumes:
       - ./config_$c:/app/YT_downloader/src/python/config
 $network_mode_host    network_mode: host
 EOL
-done
+    done
+fi
 
 # # trim()
 # Print tokens
 for ((i=0; i<num_of_bots; i++)); do
     trimmed_TOKEN=$(echo ${TOKENS[$i]} | sed 's/^[   ]*//;s/[    ]*$//')
 
-    mkdir bot_$i
-
-    cd bot_$i
+    if (( num_of_bots == 1 )); then
+        mkdir bot
+        cd bot
+    esle    
+        mkdir bot_$i
+        cd bot_$i
+    fi    
 
     echo "
-FROM python:latest
+FROM python:3.13
 WORKDIR /app
 COPY . /app
 RUN pip install --upgrade pip
@@ -161,7 +177,7 @@ RUN chmod +x /app/YT_downloader/src/scripts/script.sh
 RUN mv /app/config.py /app/YT_downloader/src/python/config/
 RUN apt-get update
 RUN apt-get install -y ffmpeg
-CMD [\"./YT_downloader/src/scripts/script.sh\"]" > Dockerfile
+CMD bash ./YT_downloader/src/scripts/script.sh" > Dockerfile
 
 echo "
 #YT_downloader
@@ -186,8 +202,11 @@ USERS = {
 DATABASE = {'pass':'$passwd', 'user':'$user', 'host':'$host', 'port':'$port', 'database':'$db'}
 " > config.py
 
-    DOCKER_IMAGE_BOT_NAME=bot_image_$i
-
+    if (( num_of_bots == 1 )); then
+        DOCKER_IMAGE_BOT_NAME=bot_image
+    else 
+        DOCKER_IMAGE_BOT_NAME=bot_image_$i
+    fi    
     if docker build -t $DOCKER_IMAGE_BOT_NAME .; then
         echo "[+][BUILD COMPLETE image name=$DOCKER_IMAGE_BOT_NAME]"
     else
@@ -209,10 +228,15 @@ DATABASE = {'pass':'$passwd', 'user':'$user', 'host':'$host', 'port':'$port', 'd
     echo "Token $((i+1)): [${trimmed_TOKEN}] DONE"
 done
 
-for ((i=0; i<num_of_bots; i++)); do
-    mkdir config_$i
-    cp bot_$i/config.py config_$i/config.py
-done
+if (( num_of_bots == 1 )); then
+    mkdir config
+    cp bot/config.py config/config.py
+else    
+    for ((i=0; i<num_of_bots; i++)); do
+        mkdir config_$i
+        cp bot_$i/config.py config_$i/config.py
+    done
+fi    
 
 if [[ "$answer" == "yes" || "$answer" == "y" || "$answer" == "Y" ]]; then
     if docker-compose up -d; then
