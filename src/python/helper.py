@@ -313,7 +313,7 @@ async def download_media(URL, is_video=False):
         cookies = await set_cookies(URL)
         done = 0
         quality = ''
-        print("[bot][+][DOWNLOADING VIDEO]")
+        print("[bot][+][START DOWNLOADING VIDEO]")
         while done < 15: # kostyl for facebook reels and tiktok
             try:
                 if 'tiktok' in URL:
@@ -383,7 +383,15 @@ async def download_media(URL, is_video=False):
                     video_path = f'{curren_path}video/{str_buf_fix(file_id)}.mp4'
                     cap = cv2.VideoCapture(video_path)
                     if not cap.isOpened():
-                        print("err open file")
+                        print("[X][NO DOWNLOADED FILE]")
+                        if done < 3 and done >= 0:
+                            done =+ 1
+                            cookies = ''
+                            continue
+                        done = 15
+                        result = False
+                        error_message = 'NO DOWNLOADED FILE'
+                        return file_id, error_message, result
                     frame_number = random.choice([random.randint(0, 45), 0, 0]) # 0 will fall out 3 times more often, 0 means first frame
                     for i in range(frame_number + 1):
                         ret, frame = cap.read()
@@ -553,10 +561,15 @@ async def get_json(URL, cookies_file=''):
             ansver = json.loads(stdout)
             id = ansver['id']
             title = ansver['title']
+            done += 1
+            return id, title, ansver
         except Exception as e: 
-            raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
-        done += 1
-    return id, title, ansver
+            cookies = ''
+            if done == 0:
+                done += 1
+                continue
+            else:
+                raise Exception(f"[X][WRONG LINK, CAN'T GET JSON FROM LINK][get_json()] + {e}") 
 
 
 async def show_cat(message: Message, bot: Bot):
