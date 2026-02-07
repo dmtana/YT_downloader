@@ -385,7 +385,7 @@ async def download_media(URL, is_video=False):
                     if not cap.isOpened():
                         print("[X][NO DOWNLOADED FILE]")
                         if done < 3 and done >= 0:
-                            done =+ 1
+                            done += 1
                             cookies = ''
                             continue
                         done = 15
@@ -573,9 +573,12 @@ async def get_json(URL, cookies_file=''):
 
 
 async def show_cat(message: Message, bot: Bot):
+    """
+    TODO: add cat picture choice from API for example goodfon or other picture-collection website
+    """
     async with ChatActionSender.upload_photo(chat_id=message.chat.id, bot=bot):
         try:
-            cat_image_path = curren_path+f'photo/Cats/cat{random.randint(1, 8)}.jpeg'
+            cat_image_path = curren_path+f'photo/Cats/cat{random.randint(1, 9)}.jpeg'
             image = FSInputFile(cat_image_path)
             await bot.send_photo(message.chat.id, image)
         except Exception as e:
