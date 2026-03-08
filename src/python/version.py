@@ -1,5 +1,6 @@
 VERSION = '2025.12.06'
 description = '''<i>
+- *** YouTube is temporary not working ***
 - cookies fix
 - upd libs
 </i>'''
