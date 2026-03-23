@@ -1,9 +1,17 @@
-VERSION = '2025.12.06'
+VERSION = '2026.03.23'
 description = '''<i>
 - *** YouTube is temporary not working ***
-- cookies fix
 - upd libs
 </i>'''
+
+
+# VERSION = '2025.12.06'
+# description = '''<i>
+# - *** YouTube is temporary not working ***
+# - cookies fix
+# - upd libs
+# </i>'''
+
 
 # VERSION = '2025.10.06'
 # description = '''<i>

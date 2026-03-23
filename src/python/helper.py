@@ -15,7 +15,11 @@ from aiogram import Bot
 from aiogram.types import Message, FSInputFile
 from aiogram.utils.chat_action import ChatActionSender
 
+from config.config import BOT_SETINGS
 from config.config import TOKEN
+
+# TODO 
+    # https://subzeroid.github.io/instagrapi/usage-guide/media.html
 
 # easter egg
 cat = ['котик', 'кися', 'котейка', 'кот', 'рыжик', 'рыжня', 'котэ', 'кисан', 'кисан кисан', 'кс кс', 'мяу', 'cat', 'pusy']
@@ -297,7 +301,7 @@ async def download_media(URL, is_video=False):
     file_name = ''
     file_id = ''
     done = 0
-    result = False 
+    result = False
     try:
         file_id, file_name, some_var = await get_json(URL)
         if await save_json(file_id, some_var):
@@ -329,11 +333,11 @@ async def download_media(URL, is_video=False):
                     # quality = '-f ba+bv'
                     #  "-t mp4" USE THIS FOR TEMPORARY FIX 
                 cmd = str(f'yt-dlp {quality} '+
-                        f'--max-filesize 50M '+ # KOSTYL for tg
+                        f'--max-filesize 50M '+ # for tg limits
                         f'-P "{curren_path}video" '+
                         f'-o "{str_buf_fix(file_id)}.mp4" '+
-                        f'{cookies} '+ # bugfix fot youtube antibot system
-                        f'{client} '+ # bugfix fot youtube antibot system
+                        f'{cookies} '+
+                        f'{client} '+
                         f'"{URL}"')
                 process = await asyncio.create_subprocess_shell(
                     cmd,
@@ -344,18 +348,14 @@ async def download_media(URL, is_video=False):
                 print(cmd)
                 print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
                       f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
-                # if 'Sign in to confirm' in str(stderr) and 'youtube' in str(stderr):
-                #     cookies = f'--cookies "{curren_path}config/www.youtube.com_cookies.txt"' # Cookies file 
-                #     done += 1
-                #     continue
                 if '403' in str(stderr) and 'Forbidden' in str(stderr):
                     client = ' --extractor-args "youtube:player_client=ios"'
                     done += 1
                     continue
-                # if 'login required' in str(stderr):
-                #     cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
-                #     done += 1
-                #     continue
+                if 'HTTP Error 403:' in str(stdout):
+                    client = ' --extractor-args "youtube:player_client=android"'
+                    done += 1
+                    continue
                 if 'File is larger than max-filesize' in str(stdout) and max_size:
                     done += 1
                     max_size = False
@@ -410,16 +410,17 @@ async def download_media(URL, is_video=False):
     else:
         cookies = await set_cookies(URL)
         done = 0
-        quality = '-f ba '
-        client = ''
+        # quality = '-f ba '
+        quality = ''
+        client = ''   
         print("[bot][+][DOWNLOADING AUDIO]")
-        while done < 3:
+        while done < 4:
             try:
                 cmd = str(f'yt-dlp {quality}'+
                         f'-o "{str_buf_fix(file_name)}" '+
                         f'--max-filesize 50.0M '+ # KOSTYL tg size 
                         f'-x --audio-quality 0 '+
-                        f'-x --audio-format mp3 '+# using ffmpeg.exe for Windows# 
+                        f'--audio-format mp3 '+# using ffmpeg.exe for Windows# 
                         f'-P {curren_path}media_from_yt '+ # path
                         f'{cookies} '+ # bugfix for youtube antibot system
                         f'{client} '+ # bugfix fot youtube antibot system
@@ -453,11 +454,16 @@ async def download_media(URL, is_video=False):
                     client = ' --extractor-args "youtube:player_client=ios"'
                     done += 1
                     continue
+                if 'HTTP Error 403:' in str(stdout):
+                    client = ' --extractor-args "youtube:player_client=android"'
+                    done += 1
+                    continue
                 # if 'login required' in str(stderr):
                 #     cookies = f'--cookies "{curren_path}config/www.instagram.com_cookies.txt"' # Cookies file  
                 #     done += 1
                 #     continue
                 if 'ERROR' in str(stderr) or 'error' in str(stderr):
+                    result = False 
                     raise Exception(stderr.decode("utf-8"))
                 print("[bot][+][DOWNLOAD AUDIO COMPLETE]")
             except Exception as e:
@@ -516,15 +522,15 @@ async def crop_to_square(image_path, output_path):
 
 async def set_cookies(URL):
     cookies_str = ''
-    if any(yt in URL for yt in  supportedsites.youtube):
+    if any(yt in URL for yt in  supportedsites.youtube) and BOT_SETINGS['cookies']['youtube']:
         # print(f'--cookies {curren_path}config/cookies/www.youtube.com_cookies.txt')
         cookies_str = f'--cookies {curren_path}config/cookies/www.youtube.com_cookies.txt'
         return cookies_str
-    elif any(inst in URL for inst in supportedsites.instagram):
+    elif any(inst in URL for inst in supportedsites.instagram) and BOT_SETINGS['cookies']['instagram']:
         # print(f'--cookies {curren_path}config/cookies/www.instagram.com_cookies.txt')
         cookies_str = f'--cookies {curren_path}config/cookies/www.instagram.com_cookies.txt'
         return cookies_str
-    elif any(fb in URL for fb in supportedsites.facebook):
+    elif any(fb in URL for fb in supportedsites.facebook) and BOT_SETINGS['cookies']['facebook']:
         # print(f'--cookies {curren_path}config/cookies/www.facebook.com_cookies.txt')
         cookies_str = f'--cookies {curren_path}config/cookies/www.facebook.com_cookies.txt'
         return cookies_str
@@ -532,7 +538,7 @@ async def set_cookies(URL):
         return cookies_str
     
     
-async def get_json(URL, cookies_file=''):
+async def get_json(URL):
     cookies = await set_cookies(URL)
     done = 0
     while done < 2:
