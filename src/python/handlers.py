@@ -17,7 +17,8 @@ from datetime import datetime, timedelta
 
 # from cache_maestro import CookieChecker
 
-from supportedsites import ELIGIBLE_SITES
+from supportedsites import *
+
 
 import os
 
@@ -128,8 +129,17 @@ async def text_handler(message: Message, bot: Bot):
     message_info = None
     args = helper.get_args(message.text)
     print(message.text)
-    if await can_download(message.chat.id):
+    if await can_download(message.chat.id, args['link']):
         try:
+            if "https://" in args['link'] and (youtube):
+                if message.from_user.id not in WHITELIST:
+                    await bot.send_message(
+                        message.chat.id,
+                        "⚠️ Скачивание с YouTube сейчас сильно ограничено.\nВедутся работы что бы это исправить.\n"
+                        "⚠️ Downloading from YouTube is currently heavily restricted.\nWork is underway to fix this." \
+                    )
+                    return 
+
             if 'https://' in args['link'] and 'youtube' in args['link'] and '&list=' in args['link']:
                 await bot.send_message(message.chat.id, "Бот не может качать весь плейлист, введите ссылку на отдедельную песню в формате 'https://...'\n\n"+
                                     "The bot cannot download the entire playlist, enter a link to an individual song in the format 'https://...")
@@ -267,31 +277,63 @@ async def feedback_from_user(message: Message, bot: Bot, state: FSMContext):
 
 #################################
 # LIMITS DOWNLOAD
-async def can_download(user_id: int) -> bool:
+async def can_download(user_id: int, link: str) -> bool:
     async with downloads_lock:
         now = datetime.now()
+
         if user_id in WHITELIST:
             return True
-        if user_id in USERS['blocked']: # для любителей собачек и прочего
+
+        if user_id in USERS['blocked']:
             return False
-        
-        downloads[user_id] = [
-            t for t in downloads[user_id]
+
+        is_youtube = any(yt in link for yt in youtube)
+        limits_type = 'youtube' if is_youtube else 'other'
+        limits = BOT_SETINGS['LIMITS'][limits_type]
+
+        # создаём хранилище отдельно по типам
+        if user_id not in downloads:
+            downloads[user_id] = {
+                'youtube': [],
+                'other': []
+            }
+
+        user_downloads = downloads[user_id][limits_type]
+
+        # чистим старые записи по окну days_delay_limit
+        downloads[user_id][limits_type] = [
+            t for t in user_downloads
+            if now - t < timedelta(days=limits['days_delay_limit'])
+        ]
+
+        user_downloads = downloads[user_id][limits_type]
+
+        # лимит по кулдауну в днях
+        if user_downloads:
+            last_download = max(user_downloads)
+            if now - last_download < timedelta(days=limits['days_delay_limit']):
+                print(f'[!][OVER LIMITS {limits_type.upper()} DAYS DELAY]')
+                return False
+
+        # лимит за день
+        per_day = [
+            t for t in user_downloads
             if now - t < timedelta(days=1)
         ]
-        # limit limit per day
-        if len(downloads[user_id]) >= LIMITS['per_day']:
-            print('[!][OVER LIMITS]')
+        if len(per_day) >= limits['per_day']:
+            print(f'[!][OVER LIMITS {limits_type.upper()} DAY]')
             return False
-        # limit 2 dl for last 10 min
+
+        # лимит за условный "hour" — у тебя тут раньше было 10 минут
         recent = [
-            t for t in downloads[user_id]
+            t for t in user_downloads
             if now - t < timedelta(minutes=10)
         ]
-        if len(recent) >= LIMITS['per_hour']:
-            print('[!][OVER LIMITS]')
+        if len(recent) >= limits['per_hour']:
+            print(f'[!][OVER LIMITS {limits_type.upper()} 10 MIN]')
             return False
-        downloads[user_id].append(now)
+
+        downloads[user_id][limits_type].append(now)
         return True
 
 
