@@ -28,7 +28,7 @@ cd bot_folder</code>
 
 Finished bot implementation -> <a href="https://t.me/yt_downloader_dmtana_bot">YT_downloader</a>
 
-<h3>YouTube antibot system fix:</h3>
+<h3>YouTube antibot system fix: (YouTube cookies TEMPORARY NOT WORKING)</h3> 
 For YouTube You will need to add cookies for anti bot system. Download your account cookies from youtube in format <code><a href="https://docs.cyotek.com/cyowcopy/1.10/netscapecookieformat.html">Netscape</a></code>, this can be obtained using a browser extension like <a href="https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc">Get cookies.txt LOCALLY</a>. After that copy this file to the <code>config/cookies</code> folder in the bot project and rename it to <code>www.youtube.com_cookies.txt</code>. 
 
 <a href="https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp">See more here -></a>
