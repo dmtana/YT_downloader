@@ -24,7 +24,7 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
             if result:
                 await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
             else:
-                await bot.send_message(chat_id=CHAT_ID, text=f'ERROR INPUT, {error_message.replace(TOKEN,'')}')
+                await bot.send_message(chat_id=CHAT_ID, text=f'RROR INPUT, {error_message.replace(TOKEN,'')}')
         except Exception as e:
             try:
                 await bot.send_message(chat_id=CHAT_ID, text=f'ERROR INPUT, WRONG LINK {error_message.replace(TOKEN,'')}')
@@ -45,7 +45,8 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
 async def download_and_send_audio(TOKEN, URL, CHAT_ID, user_name, group='', voice=False, parse_mode='HTML'):
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
     bot_name = ''
-    media_type='audio'
+    media_type = 'audio'
+    error_message = ''
     result = False
     async with ChatActionSender.upload_voice(chat_id=CHAT_ID, bot=bot):
         try:    
@@ -88,7 +89,7 @@ async def send_version(TOKEN, CHAT_ID, uptime, parse_mode='HTML'):
         print(e)
     check_version = ''
     try: # check for latest version on github
-        url = 'https://raw.githubusercontent.com/dmtana/YT_downloader/master/src/python/version.py'
+        url = 'https://raw.githubusercontent.com/dmtana/YT_downloaderE/master/src/python/version.py'
         response = requests.get(url)
         response.raise_for_status()
         config_content = response.text
