@@ -7,9 +7,11 @@ async def get_version_new():
     try:
         res = subprocess.run('pip show yt_dlp', shell=True, capture_output=True, text=True)
         var = res.stdout.split('\n')
+        print(var)
+        print(type(var))
         yt_dlp_ver = ''
         for _ in var:
-            if 'Version' in _ or 'Name' in _ :
+            if 'Version: ' in _ or 'Name: ' in _ :
                 yt_dlp_ver += _+' '
         yt_dlp_ver = yt_dlp_ver.replace('Version: ', '')
         yt_dlp_ver = yt_dlp_ver.replace('Name: ', '')
@@ -24,7 +26,7 @@ async def get_version_new():
         var = res.stdout.split('\n')
         aiogram_ver = ''
         for _ in var:
-            if 'Version' in _ or 'Name' in _ :
+            if 'Version: ' in _ or 'Name: ' in _ :
                 aiogram_ver += _+' '
         aiogram_ver = aiogram_ver.replace('Version: ', '')
         aiogram_ver = aiogram_ver.replace('Name: ', '')
@@ -35,7 +37,8 @@ async def get_version_new():
         version=yt_dlp_ver+aiogram_ver+is_latest
     except Exception as e:
         print(e)   
-    print('[+][get_version]')     
+    print('[+][get_version]')  
+    print(version)   
     return version
 
 async def version_of_aiogram(msg : str):
