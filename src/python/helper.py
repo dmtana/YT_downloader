@@ -65,16 +65,29 @@ def get_args(msg : str) -> dict:
     - commands dict   
     """
     # dict pasrsing
-    commands = {"link": '', "video": False, "group": '', "del_msg": False, "audio": False, "video_quality": ''}
+    commands = {
+        "link": '', 
+        "video": False, 
+        "group": '', 
+        "del_msg": False, 
+        "audio": False, 
+        "video_quality": '', 
+        "uptime": False
+                }
     # trim and delete spaces between words
     list_str = msg.split()
     print(list_str)
     try:
-        link = next((string for string in list_str if 'https://' in string), None)
-        commands['link'] = link.replace('&feature=share', '')
+        if any('https://' in s for s in list_str):
+            link = next((string for string in list_str if 'https://' in string), None)
+            commands['link'] = link.replace('&feature=share', '')
     except Exception as e:
         commands['link'] = list_str[0].replace('&feature=share', '')
         print('[X][Link geting error]', e, commands['link'])
+
+    if any('uptime' in s for s in list_str):
+            commands['uptime'] = True
+
     if len(list_str) > 1:
         if any(element in list_str for element in commands_audio):
             commands['audio'] = True
@@ -83,7 +96,13 @@ def get_args(msg : str) -> dict:
         if any(element in list_str for element in commands_del_msg):
             commands['del_msg'] = True
         if any(string for string in list_str if 'group=' in string):
-            commands['group'] = next((string for string in list_str if 'group=' in string), None).replace('group=', '')
+            try:
+                commands['group'] = next((string for string in list_str if 'group=' in string), None).replace('group=', '')
+            except Exception as e:
+                print('[X][Group geting error]', e)
+        
+
+
     return commands
 
 async def send_video(message, bot, file_id='', group=''):

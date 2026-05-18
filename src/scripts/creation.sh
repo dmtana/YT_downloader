@@ -260,7 +260,7 @@ USERS = {
 BOT_SETINGS={
     'cookies':{
         'youtube':False,
-        'instagram':True,
+        'instagram':False,
         'facebook':False,
         'tiktok':False
     },
