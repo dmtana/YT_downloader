@@ -89,7 +89,7 @@ async def send_version(TOKEN, CHAT_ID, uptime, parse_mode='HTML'):
         print(e)
     check_version = ''
     try: # check for latest version on github
-        url = 'https://raw.githubusercontent.com/dmtana/YT_downloaderE/master/src/python/version.py'
+        url = 'https://raw.githubusercontent.com/dmtana/YT_downloader/refs/heads/master/src/python/version.py'
         response = requests.get(url)
         response.raise_for_status()
         config_content = response.text

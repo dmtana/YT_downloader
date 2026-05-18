@@ -183,10 +183,13 @@ async def text_handler(message: Message, bot: Bot):
                 await helper.show_cat(message, bot)
                 print("мяу", end=" ")
             else:
-                await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'\n"+
+                if args['uptime']:
+                    await bot.send_message(message.chat.id, uptime.get_uptime())
+                else:
+                    await bot.send_message(message.chat.id, "Введите пожалуйста ссылку в формате 'https://...'\n"+
                                     "Please enter the link in the format 'https://...")
                 print(message.chat.type)
-                print("[-][ERROR INPUT]")
+                print("[!][THERE IS NO LINK IN THE MESSAGE]")
         except Exception as e:
             try:
                 await bot.delete_message(message.chat.id, message_info.message_id)

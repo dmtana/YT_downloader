@@ -1,8 +1,16 @@
-VERSION = '2026.03.23'
+VERSION = '2026.05.18'
 description = '''<i>
-- *** YouTube is temporary not working ***
+- *** YouTube is temporary not working on currenct config ***
 - upd libs
+- minor improvements and bugfixes
 </i>'''
+
+
+# VERSION = '2026.03.23'
+# description = '''<i>
+# - *** YouTube is temporary not working ***
+# - upd libs
+# </i>'''
 
 
 # VERSION = '2025.12.06'
