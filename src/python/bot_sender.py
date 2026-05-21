@@ -11,7 +11,7 @@ from get_version_new import get_version_new
 from config.config import ADMINS_ID, MODERATORS_ID 
 
 
-async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HTML'):
+async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HTML', cookies_flag=False):
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
     bot_name = ''
     error_message = ''
@@ -20,7 +20,7 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
         try:
             msg = await bot.send_message(chat_id=CHAT_ID, text='Downloading...')
             bot_name = str(msg.from_user.first_name)
-            file_id, error_message, result = await helper.download_media(URL, is_video=True)
+            file_id, error_message, result = await helper.download_media(URL, is_video=True, cookies_flag=cookies_flag)
             if result:
                 await helper.send_video(message=CHAT_ID, bot=bot, file_id=file_id)
             else:
@@ -42,7 +42,7 @@ async def download_and_send_video(TOKEN, URL, CHAT_ID, user_name, parse_mode='HT
         print('[X][ERROR DATABASE CONNECTION][bot_sender]', e)
     print('[bot][+][DONE SENDING IN THREAD]')    
 
-async def download_and_send_audio(TOKEN, URL, CHAT_ID, user_name, group='', voice=False, parse_mode='HTML'):
+async def download_and_send_audio(TOKEN, URL, CHAT_ID, user_name, group='', voice=False, parse_mode='HTML', cookies_flag=False):
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=parse_mode))
     bot_name = ''
     media_type = 'audio'
@@ -52,7 +52,7 @@ async def download_and_send_audio(TOKEN, URL, CHAT_ID, user_name, group='', voic
         try:    
             msg = await bot.send_message(chat_id=CHAT_ID, text='Downloading...')
             bot_name = str(msg.from_user.first_name)
-            file_id, error_message, result = await helper.download_media(URL)
+            file_id, error_message, result = await helper.download_media(URL, cookies_flag=cookies_flag)
             if result: 
                 await helper.send_audio(chat_id=CHAT_ID, bot=bot, file_id=file_id, group=group)
             if error_message:
