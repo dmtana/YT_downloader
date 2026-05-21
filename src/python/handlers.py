@@ -153,7 +153,8 @@ async def text_handler(message: Message, bot: Bot):
                             threading.Thread(target=lambda: asyncio.run(bot_sender.download_and_send_video(TOKEN=TOKEN,
                                                                                             URL=args['link'],
                                                                                             CHAT_ID=message.chat.id,
-                                                                                            user_name=message.from_user.full_name))).start()
+                                                                                            user_name=message.from_user.full_name,
+                                                                                            cookies_flag=args['cookies']))).start()
                         if args['audio']:
                             group = ''
                             if args['group'] != '':
@@ -162,7 +163,8 @@ async def text_handler(message: Message, bot: Bot):
                                                                                             URL=args['link'],
                                                                                             CHAT_ID=message.chat.id,
                                                                                             group=group,
-                                                                                            user_name=message.from_user.full_name))).start()
+                                                                                            user_name=message.from_user.full_name,
+                                                                                            cookies_flag=args['cookies']))).start()
                     else:
                         key = generate_random_key() # 45-44 from 64 bytes for call_back data - 19 left 
                         key = key[0:38] # short coz callback_data is ***** -_- gavno ebanoe, 64 simvola ya togo rot ebal

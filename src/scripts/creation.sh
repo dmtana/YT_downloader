@@ -30,6 +30,10 @@ per_hour=99
 # IMAGE
 DOCKER_IMAGE_BOT_NAME='bot_image'
 
+# INSTAGRAM CREDENTIALS
+insta_username=''
+insta_password=''
+
 # ===== HELPERS =====
 ask_yes_no() {
     local prompt="$1"
@@ -60,6 +64,10 @@ if ask_yes_no "Run bot after install? Y/n: " "yes"; then
 else
     answer="no"
 fi
+
+echo "Instagram credentials (optional, for better downloading from Instagram):"
+read -r -p "Instagram Username: " insta_username
+read -r -p "Instagram Password: " insta_password
 
 echo
 echo "Database mode:"
@@ -256,6 +264,10 @@ USERS = {
     'moderators': [],
     'white_list': []
 }
+
+INSTAGRAM_CREDENTIALS = {
+    'username': '${insta_username}',
+    'password': '${insta_password}'}
 
 BOT_SETINGS={
     'cookies':{

@@ -48,6 +48,7 @@ commands_video = ['-video', 'video', '-v', 'видео', '-в', '-видео', '
 commands_audio = ['-audio', 'audio', '-a', 'аудио', '-а', '-аудио', 'a', 'а']
 commands_del_msg = ['-del', 'del', '-d', 'd', 'уд', '-уд', 'у', '-у', '-д', 'д']
 commands_video_quality = ['best', 'b', 'bestvideo', 'bv']
+commands_coockies = ['--cookies', 'cookies', '-cookies', 'c', '-c', 'куки', '-куки']
 
 def str_buf_fix(s):
     trans_table = str.maketrans('$', 'S', '"<>:/\\|?*')
@@ -72,7 +73,8 @@ def get_args(msg : str) -> dict:
         "del_msg": False, 
         "audio": False, 
         "video_quality": '', 
-        "uptime": False
+        "uptime": False,
+        "cookies": False
                 }
     # trim and delete spaces between words
     list_str = msg.split()
@@ -95,14 +97,13 @@ def get_args(msg : str) -> dict:
             commands['video'] = True
         if any(element in list_str for element in commands_del_msg):
             commands['del_msg'] = True
+        if any(element in list_str for element in commands_coockies):
+            commands['cookies'] = True
         if any(string for string in list_str if 'group=' in string):
             try:
                 commands['group'] = next((string for string in list_str if 'group=' in string), None).replace('group=', '')
             except Exception as e:
                 print('[X][Group geting error]', e)
-        
-
-
     return commands
 
 async def send_video(message, bot, file_id='', group=''):
@@ -314,7 +315,7 @@ async def send_from_joyreactor(CHAT_ID, TOKEN, LINK):
     print(f'[cmd][+][STDOUT]'+'\n'+f'{stdout.decode("utf-8")}'+
             f'[cmd][!][ERRORS]'+'\n'+f'{stderr.decode("utf-8")}')
 
-async def download_media(URL, is_video=False):
+async def download_media(URL, is_video=False, cookies_flag=False):
     some_var = '' # JSON info from yt-dlp lib
     error_message = ''    
     file_name = ''
@@ -322,7 +323,7 @@ async def download_media(URL, is_video=False):
     done = 0
     result = False
     try:
-        file_id, file_name, some_var = await get_json(URL)
+        file_id, file_name, some_var = await get_json(URL, cookies_flag)
         if await save_json(file_id, some_var):
             result = True
     except Exception as e:
@@ -333,7 +334,7 @@ async def download_media(URL, is_video=False):
     if is_video:
         max_size = True
         client = ''
-        cookies = await set_cookies(URL)
+        cookies = await set_cookies(URL, cookies_flag)
         done = 0
         quality = ''
         print("[bot][+][START DOWNLOADING VIDEO]")
@@ -427,7 +428,7 @@ async def download_media(URL, is_video=False):
         result = True    
         print("[bot][+][DOWNLOAD VIDEO COMPLETE]") 
     else:
-        cookies = await set_cookies(URL)
+        cookies = await set_cookies(URL, cookies_flag)
         done = 0
         # quality = '-f ba '
         quality = ''
@@ -539,26 +540,30 @@ async def crop_to_square(image_path, output_path):
         img_cropped.save(output_path)
 
 
-async def set_cookies(URL):
+async def set_cookies(URL, cookies=False):
+    # COOKIES HARASSMENT :D 
+    '''This method is for setting cookies for youtube, instagram and facebook if user want to use it or yt-dlp ask for it. This can help to avoid some errors with downloading media from this sites.'''
     cookies_str = ''
-    if any(yt in URL for yt in  supportedsites.youtube) and BOT_SETINGS['cookies']['youtube']:
+    if any(yt in URL for yt in  supportedsites.youtube) and BOT_SETINGS['cookies']['youtube'] or any(yt in URL for yt in  supportedsites.youtube) and cookies:
         # print(f'--cookies {curren_path}config/cookies/www.youtube.com_cookies.txt')
         cookies_str = f'--cookies {curren_path}config/cookies/www.youtube.com_cookies.txt'
+        print('[helper][+][COOKIES FOR YOUTUBE]')
         return cookies_str
-    elif any(inst in URL for inst in supportedsites.instagram) and BOT_SETINGS['cookies']['instagram']:
+    elif any(inst in URL for inst in supportedsites.instagram) and BOT_SETINGS['cookies']['instagram'] or any(inst in URL for inst in supportedsites.instagram) and cookies:
         # print(f'--cookies {curren_path}config/cookies/www.instagram.com_cookies.txt')
         cookies_str = f'--cookies {curren_path}config/cookies/www.instagram.com_cookies.txt'
+        print('[helper][+][COOKIES FOR INSTAGRAM]')
         return cookies_str
-    elif any(fb in URL for fb in supportedsites.facebook) and BOT_SETINGS['cookies']['facebook']:
-        # print(f'--cookies {curren_path}config/cookies/www.facebook.com_cookies.txt')
+    elif any(fb in URL for fb in supportedsites.facebook) and BOT_SETINGS['cookies']['facebook'] or any(fb in URL for fb in supportedsites.facebook) and cookies:
         cookies_str = f'--cookies {curren_path}config/cookies/www.facebook.com_cookies.txt'
+        print('[helper][+][COOKIES FOR FACEBOOK]')
         return cookies_str
     else: 
         return cookies_str
     
     
-async def get_json(URL):
-    cookies = await set_cookies(URL)
+async def get_json(URL, cookies_flag=False):
+    cookies = await set_cookies(URL, cookies_flag)
     done = 0
     while done < 2:
         cmd = str(f'yt-dlp -J {cookies} "{URL}"')
